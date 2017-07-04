@@ -6,4 +6,4 @@ repo:
     port: 10080
 git:
     address: dev.g-node.org
-    port: 2222
+    port: 10022
