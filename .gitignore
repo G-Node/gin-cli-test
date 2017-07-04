@@ -1,0 +1,6 @@
+# temp/swap files
+*~
+*.log
+*.kate-swp
+*.swp
+*.swo
