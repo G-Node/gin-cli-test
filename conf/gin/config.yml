@@ -1,0 +1,9 @@
+auth:
+    address: http://dev.g-node.org
+    port: 10080
+repo:
+    address: http://dev.g-node.org
+    port: 10080
+git:
+    address: dev.g-node.org
+    port: 2222
