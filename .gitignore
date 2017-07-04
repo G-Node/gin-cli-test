@@ -4,3 +4,6 @@
 *.kate-swp
 *.swp
 *.swo
+
+# token(s)
+token
