@@ -27,16 +27,19 @@ md5sum * > "${testroot}/${reponame}.md5"
 gin upload
 
 # delete local directory
+git annex uninit
 popd
-chmod 777 -R "$reponame"
-rm -r "$reponame"
+rm -rf "$reponame"
 
 # redownload and check the hashes
-gin get $username/$reponame
+repopath=${username}/${reponame}
+gin get $repopath
 pushd $reponame
-md5sum -c "${testroot}/${reponame}.md5"
+# md5sum -c "${testroot}/${reponame}.md5"
 
 # cleanup
+git annex uninit
 popd
-chmod 777 -R "$reponame"
-rm -r "$reponame"
+rm -rf $repopath
+gin delete $repopath <<< $repopath
+
