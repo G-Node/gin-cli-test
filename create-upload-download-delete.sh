@@ -38,7 +38,8 @@ rm -rf "$reponame"
 repopath=${username}/${reponame}
 gin get $repopath
 pushd $reponame
-gin download
+gin download $fname1
+gin download .
 md5sum -c "${testroot}/${reponame}.md5"
 
 # cleanup
