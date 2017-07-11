@@ -20,8 +20,8 @@ pushd $reponame
 # create randfiles
 fname1="file-${RANDOM}.rnd"
 fname2="file-${RANDOM}.rnd"
-dd if=/dev/urandom of="$fname1" bs=11M count=1
-dd if=/dev/urandom of="$fname2" bs=11M count=2
+dd if=/dev/urandom of="$fname1" bs=1k count=2
+dd if=/dev/urandom of="$fname2" bs=1k count=3
 
 # save md5 hashes for checking later
 md5sum * > "${testroot}/${reponame}.md5"
