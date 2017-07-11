@@ -38,7 +38,16 @@ rm -rf "$reponame"
 repopath=${username}/${reponame}
 gin get $repopath
 pushd $reponame
+
+# both checksums should fail
+[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "FAILED" | wc -l ) -eq 2 ]
+
+# one checksum should fail and one should succeed
 gin download $fname1
+[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "OK" | wc -l ) -eq 1 ]
+[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "FAILED" | wc -l ) -eq 1 ]
+
+# both checksums should succeed
 gin download .
 md5sum -c "${testroot}/${reponame}.md5"
 
