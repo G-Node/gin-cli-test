@@ -48,3 +48,5 @@ popd
 rm -rf $repopath
 gin delete $repopath <<< $repopath
 
+
+echo "DONE!"

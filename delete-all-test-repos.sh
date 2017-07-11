@@ -21,3 +21,4 @@ do
     gin delete $reponame <<< $reponame
 done
 
+echo "DONE!"
