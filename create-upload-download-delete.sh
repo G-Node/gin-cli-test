@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+# This script performs the following actions:
+#  1. Log into gin (should use dev server)
+#  2. Create a test repository
+#  3. Create two random files in the test repository
+#  4. Compute hashes for the new files
+#  5. Upload the files
+#  6. Delete the local copy of the repository
+#  7. Perform a gin get, which performs a git clone and annex init, but does not download content
+#  8. Check that the local random files are placeholders and have no content
+#  9. Download the first file and check that only one file has content and correct md5 hash
+# 10. Download the second file and check that both files have content and correct md5 hashes
+# 11. Delete the local copy of the repository
 
 set -x
 set -e
