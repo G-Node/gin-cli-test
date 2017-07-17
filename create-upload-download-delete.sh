@@ -75,7 +75,7 @@ md5sum -c "${testroot}/${reponame}.md5"
 # cleanup
 git annex uninit
 popd
-rm -rf $repopath
+rm -rf $reponame
 gin delete $repopath <<< $repopath
 
 
