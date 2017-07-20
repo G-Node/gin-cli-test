@@ -46,6 +46,33 @@ gin upload
 # gin upload command should not have created an extra commit
 [ $(git --no-pager log | grep "^commit" | wc -l) -eq 2 ]
 
+# Create more root files that will remain UNTRACKED
+for idx in {a..f}
+do
+    fname=root-file-$idx.untracked
+    echo "I am a root file. I will not be added to git or annex" > $fname
+done
+
+# Create some subdirectories with files
+for idx in {a..f}
+do
+    dirname=subdir-$idx
+    mkdir -v $dirname
+    pushd $dirname
+    for jdx in {01..10}
+    do
+        fname=subfile-$jdx.annex
+        echo "I am a file in directory $dirname" > $fname
+    done
+done
+
+# Upload the files of the first subdirectory only
+gin upload subdir-a
+
+# should only have 10 new synced files
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 82 ]
+
+
 # cleanup
 git annex uninit
 popd
