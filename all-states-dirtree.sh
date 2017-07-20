@@ -20,13 +20,13 @@ pushd $reponame
 for idx in {000..050}
 do
     fname=root-$idx.git
-    echo "I am a root file, added to git" > $fname
+    echo "I am root file $idx, added to git" > $fname
     git add $fname
 done
 for idx in {070..090}
 do
     fname=root-$idx.annex
-    echo "I am a root file, added to annex" > $fname
+    echo "I am root file $idx, added to annex" > $fname
     git annex add $fname
 done
 
@@ -62,7 +62,7 @@ do
     for jdx in {01..10}
     do
         fname=subfile-$jdx.annex
-        echo "I am a file in directory $dirname" > $fname
+        echo "I am file $jdx in directory $dirname" > $fname
     done
     popd
 done
