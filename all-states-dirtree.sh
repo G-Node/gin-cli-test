@@ -67,19 +67,22 @@ do
     popd
 done
 
-# Upload the files of the first subdirectory only
-gin upload subdir-a
+# Upload the files of the first subdirectory only and a couple from the second
+gin upload subdir-a subdir-b/subfile-05.annex subdir-b/subfile-10.annex
 
 # should only have 10 new synced files
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 82 ]
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
 # there should be 56 untracked files total
-[ $(gin ls --short | grep -F "??" | wc -l) -eq 56 ]
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 54 ]
 # can also check each directory individually
-for idx in {b..f}
+[ $(gin ls --short subdir-b | grep -F "??" | wc -l) -eq 8 ]
+for idx in {c..f}
 do
     dirname=subdir-$idx
     [ $(gin ls --short $dirname | grep -F "??" | wc -l) -eq 10 ]
 done
+
+# TODO: Need to set some annexed files as NO CONTENT and test
 
 # cleanup
 git annex uninit
