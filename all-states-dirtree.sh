@@ -82,10 +82,16 @@ do
     [ $(gin ls --short $dirname | grep -F "??" | wc -l) -eq 10 ]
 done
 
-# TODO: Need to set some annexed files as NO CONTENT and test
+# There should be no NC files so far
+[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 0 ]
+
+# drop some files and check the counts
+gin rmc subdir-b/subfile-05.annex
+[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 1 ]
+
 
 # cleanup
-git annex uninit
+git annex uninit || true
 popd
 rm -rf $repopath
 gin delete $repopath <<< $repopath
