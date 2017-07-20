@@ -64,6 +64,7 @@ do
         fname=subfile-$jdx.annex
         echo "I am a file in directory $dirname" > $fname
     done
+    popd
 done
 
 # Upload the files of the first subdirectory only
@@ -71,7 +72,14 @@ gin upload subdir-a
 
 # should only have 10 new synced files
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 82 ]
-
+# there should be 56 untracked files total
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 56 ]
+# can also check each directory individually
+for idx in {b..f}
+do
+    dirname=subdir-$idx
+    [ $(gin ls --short $dirname | grep -F "??" | wc -l) -eq 10 ]
+done
 
 # cleanup
 git annex uninit
