@@ -42,7 +42,7 @@ md5sum * > "${testroot}/${reponame}.md5"
 gin upload
 
 # delete local directory
-git annex uninit
+git annex uninit || true
 popd
 rm -rf "$reponame"
 
@@ -73,7 +73,7 @@ gin download .
 md5sum -c "${testroot}/${reponame}.md5"
 
 # cleanup
-git annex uninit
+git annex uninit || true
 popd
 rm -rf $reponame
 gin delete $repopath <<< $repopath
