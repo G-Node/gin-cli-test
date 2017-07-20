@@ -89,6 +89,16 @@ done
 gin rmc subdir-b/subfile-05.annex
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 1 ]
 
+gin rmc subdir-b
+[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 2 ]
+
+gin remove-content subdir-a
+[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 2 ]
+[ $(gin ls --short subdir-a | grep -F "NC" | wc -l) -eq 10 ]
+[ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
+
+# NC files are broken symlinks
+[ $(find . -xtype l | wc -l) -eq 12 ]
 
 # cleanup
 git annex uninit || true
