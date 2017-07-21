@@ -6,7 +6,7 @@ source ./setenv.sh
 gin login $username <<< $password
 
 # collect all test repo names
-testrepos=$(gin repos | grep -oP "\w+/gin-test-\d+")
+testrepos=$(gin repos | grep -oP "\w+/gin-test-(win-)?\d+")
 echo "The following repositories will be deleted"
 for reponame in $testrepos
 do
