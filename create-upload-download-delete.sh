@@ -52,23 +52,23 @@ gin get $repopath
 pushd $reponame
 
 # both should be NC
-[ $(gin ls --short | grep -F "NC" | wc -l ) -eq 2 ]
+[ $(gin ls --short | fgrep "NC" | wc -l ) -eq 2 ]
 # both checksums should fail
-[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "FAILED" | wc -l ) -eq 2 ]
+[ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 2 ]
 
 # download first file
 gin download $fname1
 # one file should be NC and the other OK
-[ $(gin ls -s | grep -F "OK" | wc -l ) -eq 1 ]
-[ $(gin ls --short | grep -F "NC" | wc -l ) -eq 1 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 1 ]
+[ $(gin ls --short | fgrep "NC" | wc -l ) -eq 1 ]
 # one checksum should fail and one should succeed
-[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "OK" | wc -l ) -eq 1 ]
-[ $(md5sum -c "${testroot}/${reponame}.md5" | grep -F "FAILED" | wc -l ) -eq 1 ]
+[ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "OK" | wc -l ) -eq 1 ]
+[ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 1 ]
 
 # download everything
 gin download .
 # both files dhould be OK
-[ $(gin ls -s | grep -F "OK" | wc -l ) -eq 2 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 2 ]
 # both checksums should succeed
 md5sum -c "${testroot}/${reponame}.md5"
 
