@@ -7,3 +7,6 @@
 
 # token(s)
 token
+
+# macOS junk
+.DS_Store
