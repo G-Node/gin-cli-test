@@ -27,6 +27,9 @@ call %loc%\winutil\mkfile %fname2% 50
 gin ls
 gin upload
 gin ls
+gin rmc %fname1%
+gin ls
+gin rmc
 
 git annex uninit
 popd
