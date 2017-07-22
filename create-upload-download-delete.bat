@@ -23,13 +23,28 @@ set fname1=file-%RANDOM%.rnd
 call %loc%\winutil\mkfile %fname1% 50
 set fname2=file-%RANDOM%.rnd
 call %loc%\winutil\mkfile %fname2% 50
+set fname3=file-%RANDOM%.rnd
+call %loc%\winutil\mkfile %fname3% 50
+set fname4=file-%RANDOM%.rnd
+call %loc%\winutil\mkfile %fname4% 50
+set fname5=file-%RANDOM%.rnd
+call %loc%\winutil\mkfile %fname5% 50
 
 gin ls
-gin upload
+gin ls -s | grep "^??" | wc -l
+gin upload %fname1% %fname5%
 gin ls
+gin ls
+gin ls -s | grep "^OK" | wc -l
+gin ls -s | grep "^??" | wc -l
 gin rmc %fname1%
 gin ls
+gin ls -s | grep "^NC" | wc -l
+gin ls -s | grep "^OK" | wc -l
+gin upload
 gin rmc
+gin ls
+gin ls -s | grep "^NC" | wc -l
 
 git annex uninit
 popd
