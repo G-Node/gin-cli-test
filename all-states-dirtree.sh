@@ -82,6 +82,16 @@ do
     [ $(gin ls --short $dirname | grep -F "??" | wc -l) -eq 10 ]
 done
 
+# Unlock some files
+gin unlock root-070.annex root-075.annex root-084.annex
+
+# Unlocked files should be marked UL
+[ $(gin ls --short subdir-b | grep -F "UL" | wc -l) -eq 3 ]
+
+# Relock one of the files
+gin lock root-084.annex
+[ $(gin ls --short subdir-b | grep -F "UL" | wc -l) -eq 2 ]
+
 # There should be no NC files so far
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 0 ]
 
