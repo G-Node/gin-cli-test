@@ -11,4 +11,4 @@ set "XDG_CONFIG_HOME=%loc%\conf"
 set "XDG_DATA_HOME=%loc%\log"
 
 set username=achilleas
-set password=uwbrohukpgjjjkujpnlddjpjrgtgdunicqhfy
+set password=
