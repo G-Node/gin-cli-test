@@ -35,10 +35,10 @@ done
 git commit -m "adding stuff"
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
-git push
-# git stuff pushed -- annex not synced
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 51 ]
-[ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
+# git push --- disabling since it doesn't work without a permanent key
+# # git stuff pushed -- annex not synced
+# [ $(gin ls --short | grep -F "OK" | wc -l) -eq 51 ]
+# [ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
 
 gin upload
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
