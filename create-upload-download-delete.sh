@@ -53,7 +53,7 @@ pushd $reponame
 
 # both should be NC
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 2 ]
-# both checksums should fail
+# both checksums should fail; md5sum should warn about missing files because of broken links
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 2 ]
 
 # download first file

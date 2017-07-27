@@ -31,19 +31,29 @@ set fname5=file-%RANDOM%.rnd
 call %loc%\winutil\mkfile %fname5% 50
 
 gin ls
+
+rem should be 5
 gin ls -s | grep "^??" | wc -l
+
 gin upload %fname1% %fname5%
 gin ls
-gin ls
+
+rem should be 2
 gin ls -s | grep "^OK" | wc -l
+rem should be 3
 gin ls -s | grep "^??" | wc -l
+
 gin rmc %fname1%
 gin ls
+rem
+rem should be 1
 gin ls -s | grep "^NC" | wc -l
+rem should be 1
 gin ls -s | grep "^OK" | wc -l
 gin upload
 gin rmc
 gin ls
+rem should be 5
 gin ls -s | grep "^NC" | wc -l
 
 git annex uninit
