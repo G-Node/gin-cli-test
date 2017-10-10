@@ -52,6 +52,12 @@ echo "I am a python script" > python.py
 # upload files
 gin upload .
 
+# create a 'foo' file (custom extension found in config file)
+echo "I am a foo file" > biscuits.foo
+
+# upload foo file
+gin upload biscuits.foo
+
 # delete local directory
 git annex uninit || true
 popd
@@ -63,7 +69,7 @@ gin get $repopath
 pushd $reponame
 
 # git files should be here
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 2 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 3 ]
 
 # both rand files should be NC
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 2 ]
@@ -73,7 +79,7 @@ pushd $reponame
 # download first rand file
 gin get-content $fname1
 # one file should be NC and the other OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 3 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 4 ]
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 1 ]
 # one checksum should fail and one should succeed
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "OK" | wc -l ) -eq 1 ]
@@ -82,7 +88,7 @@ gin get-content $fname1
 # download everything
 gin get-content .
 # both files dhould be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 4 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 5 ]
 # both checksums should succeed
 md5sum -c "${testroot}/${reponame}.md5"
 

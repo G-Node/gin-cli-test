@@ -8,4 +8,5 @@ git:
     address: dev.g-node.org
     port: 10022
 annex:
-    minsize: 20M
+    minsize: 1kb
+    exclude: ["*.foo", "*.md", "*.py"]
