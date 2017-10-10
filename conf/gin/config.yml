@@ -8,4 +8,4 @@ git:
     address: dev.g-node.org
     port: 10022
 annex:
-    minsize: 1kb
+    minsize: 20M

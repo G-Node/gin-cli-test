@@ -39,7 +39,7 @@ dd if=/dev/urandom of="$fname2" bs=1k count=3
 md5sum * > "${testroot}/${reponame}.md5"
 
 # upload files
-gin upload
+gin upload .
 
 # delete local directory
 git annex uninit || true
@@ -57,7 +57,7 @@ pushd $reponame
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 2 ]
 
 # download first file
-gin download $fname1
+gin get-content $fname1
 # one file should be NC and the other OK
 [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 1 ]
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 1 ]
@@ -66,8 +66,8 @@ gin download $fname1
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 1 ]
 
 # download everything
-gin download .
-# both files dhould be OK
+gin get-content .
+# both files should be OK
 [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 2 ]
 # both checksums should succeed
 md5sum -c "${testroot}/${reponame}.md5"
