@@ -11,7 +11,7 @@ go:
 before_install:
     - sudo apt-get update
     - sudo apt-get install git-annex
-    - go get github.com/G-Node/gin-cli
+    - go get -v github.com/G-Node/gin-cli
     - docker pull gnode/ginhome
     - ./start-server.sh
 
