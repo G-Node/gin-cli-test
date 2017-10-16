@@ -78,5 +78,6 @@ popd
 rm -rf $reponame
 gin delete $repopath <<< $repopath
 
+gin logout
 
 echo "DONE!"
