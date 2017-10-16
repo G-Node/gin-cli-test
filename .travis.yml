@@ -13,5 +13,5 @@ script:
     - cd $TRAVIS_BUILD_DIR
     - ./start-server.sh
     - docker ps
-    - curl localhost:3000
+    - curl 127.0.0.1:3000
     - ./test-git-annex-selection.sh
