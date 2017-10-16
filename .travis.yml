@@ -3,13 +3,13 @@ sudo: required
 services:
     - docker
 
+env:
+    - PATH=$PATH:$TRAVIS_BUILD_DIR/bin
+
 before_install:
-    - go version
-    - sudo apt-get update
-    - sudo apt-get install git-annex golang-1.9
-    - go get -v github.com/G-Node/gin-cli
     - docker pull gnode/ginhome
     - ./start-server.sh
 
 script:
-    ./create-upload-download-delete.sh
+    - cd $TRAVIS_BUILD_DIR
+    - ./test-git-annex-selection.sh
