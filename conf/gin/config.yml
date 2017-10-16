@@ -1,7 +1,4 @@
-auth:
-    address: http://localhost
-    port: 3000
-repo:
+gin:
     address: http://localhost
     port: 3000
 git:
