@@ -5,5 +5,5 @@ git:
     address: localhost
     port: 2222
 annex:
-    minsize: 1kb
+    minsize: 50kB
     exclude: ["*.foo", "*.md", "*.py"]
