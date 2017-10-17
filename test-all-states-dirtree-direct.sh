@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+mkgitfile() {
+    dd if=/dev/urandom of=$1 bs=10k count=1
+}
+
+mkannexfile() {
+    dd if=/dev/urandom of=$1 bs=100k count=1
+}
+
 set -x
 set -e
 source ./setenv.sh
@@ -19,24 +27,32 @@ pushd $reponame
 echo "************ SWITCHING TO DIRECT MODE ************"
 git annex direct
 
-# create files in root
+# create files in root to be annexed
 for idx in {070..090}
 do
     fname=root-$idx.annex
-    echo "I am root file $idx, added to annex" > $fname
-    git annex add $fname
+    mkannexfile $fname
 done
 
-[ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 21 ]
 
-git annex proxy -- git commit -m "adding stuff"
-[ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
-
-gin upload
+gin upload .
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 21 ]
 
-# gin upload command should not have created an extra commit
-[ $(git --no-pager log | grep "^commit" | wc -l) -eq 2 ]
+
+# modify them
+for idx in {070..090}
+do
+    fname=root-$idx.annex
+    mkannexfile $fname
+done
+
+[ $(gin ls --short | grep -F "MD" | wc -l) -eq 21 ]
+
+gin upload .
+
+# should have 3 commits so far
+[ $(git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
 
 # Create more root files that will remain UNTRACKED
 for idx in {a..f}
@@ -54,7 +70,7 @@ do
     for jdx in {01..10}
     do
         fname=subfile-$jdx.annex
-        echo "I am file $jdx in directory $dirname" > $fname
+        mkannexfile $fname
     done
     popd
 done
@@ -89,8 +105,14 @@ gin remove-content subdir-a
 [ $(gin ls --short subdir-a | grep -F "NC" | wc -l) -eq 10 ]
 [ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
 
-# NC files are broken symlinks
-[ $(find . -xtype l | wc -l) -eq 12 ]
+if [ "$(git config --local core.symlinks)" != "false" ]
+then
+    # NC files are broken symlinks
+    [ $(find . -xtype l | wc -l) -eq 12 ]
+else
+    # NC files are pointer files to annex
+    [ $(grep -F "git/annex/objects" -r . | wc -l) -eq 12 ]
+fi
 
 # cleanup
 git annex uninit || true
