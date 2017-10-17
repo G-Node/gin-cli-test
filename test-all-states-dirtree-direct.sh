@@ -78,6 +78,7 @@ done
 # Upload the files of the first subdirectory only and a couple from the second
 gin upload subdir-a subdir-b/subfile-05.annex subdir-b/subfile-10.annex
 
+
 # should only have 12 new synced files
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 33 ]
 # there should be 54 untracked files total
@@ -104,6 +105,24 @@ gin remove-content subdir-a
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 2 ]
 [ $(gin ls --short subdir-a | grep -F "NC" | wc -l) -eq 10 ]
 [ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
+
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 21 ]
+
+# Create some small files that should be added to git (not annex)
+mkdir -v files-for-git
+pushd files-for-git
+for idx in {01..05}
+do
+    fname=subfile-$idx.git
+    mkgitfile $fname
+done
+popd
+
+gin upload files-for-git
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 26 ]
+
+# none of these files should be in annex
+[ $(git annex status files-for-git | wc -l) -eq 0 ]
 
 if [ "$(git config --local core.symlinks)" != "false" ]
 then
