@@ -31,9 +31,9 @@ pushd $reponame
 
 # create randfiles
 fname1="file-${RANDOM}.rnd"
+mkannexfile $fname1
 fname2="file-${RANDOM}.rnd"
-dd if=/dev/urandom of="$fname1" bs=1k count=2
-dd if=/dev/urandom of="$fname2" bs=1k count=3
+mkannexfile $fname2
 
 # save md5 hashes for checking later
 md5sum * > "${testroot}/${reponame}.md5"
