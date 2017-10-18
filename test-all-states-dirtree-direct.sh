@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-mkgitfile() {
-    dd if=/dev/urandom of=$1 bs=10k count=1
-}
-
-mkannexfile() {
-    dd if=/dev/urandom of=$1 bs=100k count=1
-}
-
 set -x
 set -e
 source ./setenv.sh
