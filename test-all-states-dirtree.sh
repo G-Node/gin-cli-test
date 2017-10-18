@@ -20,13 +20,13 @@ pushd $reponame
 for idx in {000..050}
 do
     fname=root-$idx.git
-    echo "I am root file $idx, added to git" > $fname
+    mkgitfile $fname
     git add $fname
 done
 for idx in {070..090}
 do
     fname=root-$idx.annex
-    echo "I am root file $idx, added to annex" > $fname
+    mkannexfile $fname
     git annex add $fname
 done
 
@@ -35,12 +35,7 @@ done
 git commit -m "adding stuff"
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
-# git push --- disabling since it doesn't work without a permanent key
-# # git stuff pushed -- annex not synced
-# [ $(gin ls --short | grep -F "OK" | wc -l) -eq 51 ]
-# [ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
-
-gin upload
+gin upload  # since we manually did the commit, the upload should sync everything
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
 
 # gin upload command should not have created an extra commit
@@ -62,7 +57,7 @@ do
     for jdx in {01..10}
     do
         fname=subfile-$jdx.annex
-        echo "I am file $jdx in directory $dirname" > $fname
+        mkannexfile $fname
     done
     popd
 done
