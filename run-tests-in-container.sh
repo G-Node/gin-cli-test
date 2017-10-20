@@ -8,6 +8,9 @@ runscript() {
     docker exec -i -t gintest bash -c "cd /root/tests/; PATH=\$PATH:/root/tests/bin $1"
 }
 
+echo "Running curl localhost:3000 in container"
+runscript "curl localhost:3000"
+
 for testscript in test-*.sh
 do
     runscript ./$testscript
