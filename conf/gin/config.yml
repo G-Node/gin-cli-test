@@ -3,7 +3,7 @@ gin:
     port: 3000
 git:
     address: localhost
-    port: 2222
+    port: 22
 annex:
     minsize: 50kB
     exclude: ["*.foo", "*.md", "*.py"]
