@@ -9,7 +9,7 @@ before_install:
     - docker pull gnode/ginhome
     - ./start-server.sh
     - docker ps -a
-    - while ! curl localhost:3000; do sleep 1; done
+    - while ! curl localhost:3000 -so /dev/null; do sleep 1; done
 
 script:
     - ./run-all-tests.sh
