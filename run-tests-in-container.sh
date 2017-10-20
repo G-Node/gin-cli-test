@@ -5,12 +5,12 @@ errorcount=0
 errored=()
 
 runscript() {
-    docker exec -i -t gintest bash -c "cd /root/tests/; PATH=\$PATH:/root/tests/bin ./$1"
+    docker exec -i -t gintest bash -c "cd /root/tests/; PATH=\$PATH:/root/tests/bin $1"
 }
 
 for testscript in test-*.sh
 do
-    runscript $testscript
+    runscript ./$testscript
     teststatus=$?
     if [ $teststatus -ne 0 ]
     then
@@ -20,6 +20,7 @@ do
     fi
 done
 
+runscript "./delete-all-test-repos.sh <<< echo"
 runscript ./logout.sh
 
 if [ $errorcount -gt 0 ]
