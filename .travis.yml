@@ -5,10 +5,9 @@ services:
 
 before_install:
     - docker pull gnode/ginhome
+    - ./start-server.sh
+    - docker ps -a
 
 script:
-    - cd $TRAVIS_BUILD_DIR
-    - ./start-server.sh
-    - docker ps
     - ./run-tests-in-container.sh
     - cat log/gin/gin.log
