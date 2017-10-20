@@ -11,3 +11,4 @@ script:
     - ./start-server.sh
     - docker ps
     - ./run-tests-in-container.sh
+    - cat log/gin/gin.log
