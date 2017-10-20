@@ -10,5 +10,4 @@ before_install:
     - while ! curl localhost:3000; do sleep 1; done
 
 script:
-    - ./run-tests-in-container.sh
-    - cat log/gin/gin.log
+    - ./run-all-tests.sh
