@@ -12,6 +12,10 @@ before_install:
     - while ! curl localhost:3000 -so /dev/null; do sleep 1; done
 
 script:
+    - mkdir foobar
+    - cd foobar
+    - git init
+    - git-annex init testuser@1ea51e4841c3 -c annex.ssh-options="-o StrictHostKeyChecking=no -i /root/tests/conf/gin/testuser.key"
     - ./run-all-tests.sh
 
 after_script:
