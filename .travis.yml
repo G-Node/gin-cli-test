@@ -11,3 +11,4 @@ before_install:
 
 script:
     - ./run-all-tests.sh
+    - cat ./log/gin/gin.log
