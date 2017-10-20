@@ -10,5 +10,4 @@ script:
     - cd $TRAVIS_BUILD_DIR
     - ./start-server.sh
     - docker ps
-    - curl 127.0.0.1:3000
     - ./run-tests-in-container.sh
