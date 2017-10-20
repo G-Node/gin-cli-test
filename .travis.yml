@@ -3,9 +3,6 @@ sudo: false
 services:
     - docker
 
-env:
-    - PATH=$PATH:$TRAVIS_BUILD_DIR/bin
-
 before_install:
     - docker pull gnode/ginhome
 
@@ -14,4 +11,4 @@ script:
     - ./start-server.sh
     - docker ps
     - curl 127.0.0.1:3000
-    - ./test-git-annex-selection.sh
+    - ./run-tests-in-container.sh
