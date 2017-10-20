@@ -26,6 +26,9 @@ reponame=gin-test-${RANDOM}
 gin create $reponame "Test repository --- Created with test scripts"
 pushd $reponame
 
+echo "FINISH ME"
+false
+
 # create randfiles
 # cleanup
 git annex uninit
