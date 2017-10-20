@@ -13,13 +13,14 @@ before_install:
 
 script:
     - mkdir foobar
-    - cd foobar
+    - pushd foobar
     - git init
     - git config --local user.name "foo"
     - git config --local user.email "foo@bar.com"
     - git status
     - git commit --allow-empty -m "Initial commit"
     - git-annex init testuser@1ea51e4841c3 -c annex.ssh-options="-o StrictHostKeyChecking=no -i /root/tests/conf/gin/testuser.key"
+    - popd
     - ./run-all-tests.sh
 
 after_script:
