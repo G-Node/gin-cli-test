@@ -81,14 +81,29 @@ done
 gin unlock root-070.annex root-075.annex root-084.annex
 
 # Unlocked files should be marked UL
-[ $(gin ls --short subdir-b | grep -F "UL" | wc -l) -eq 3 ]
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 3 ]
+
+# Unlock a whole directory
+gin unlock subdir-a
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 13 ]
+
+# Check subdirectory only
+[ $(gin ls --short subdir-a | grep -F "UL" | wc -l) -eq 10 ]
+
+# Check again but from within the subdir
+pushd subdir-a
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 10 ]
+popd
 
 # Relock one of the files
 gin lock root-084.annex
-[ $(gin ls --short subdir-b | grep -F "UL" | wc -l) -eq 2 ]
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 12 ]
+
+# check one of thee remaining unlocked files explicitly
+[ $(gin ls --short root-070.annex | grep -F "UL" | wc -l) -eq 1 ]
 
 # There should be no NC files so far
-[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "NC" | wc -l) -eq 0 ]
 
 # drop some files and check the counts
 gin rmc subdir-b/subfile-05.annex
