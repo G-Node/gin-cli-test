@@ -4,8 +4,6 @@ cd $loc
 errorcount=0
 errored=()
 
-export PATH=$PATH:$loc/bin
-
 for testscript in test-*.sh
 do
     ./$testscript
