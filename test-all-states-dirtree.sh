@@ -21,25 +21,25 @@ for idx in {000..050}
 do
     fname=root-$idx.git
     mkgitfile $fname
-    git add $fname
+    gin git add $fname
 done
 for idx in {070..090}
 do
     fname=root-$idx.annex
     mkannexfile $fname
-    git annex add $fname
+    gin annex add $fname
 done
 
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
-git commit -m "adding stuff"
+gin git commit -m "adding stuff"
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
 gin upload  # since we manually did the commit, the upload should sync everything
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
 
 # gin upload command should not have created an extra commit
-[ $(git --no-pager log | grep "^commit" | wc -l) -eq 2 ]
+[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 2 ]
 
 # Create more root files that will remain UNTRACKED
 for idx in {a..f}
@@ -121,7 +121,7 @@ gin remove-content subdir-a
 [ $(find . -xtype l | wc -l) -eq 12 ]
 
 # cleanup
-git annex uninit || true
+gin annex uninit || true
 popd
 rm -rf $repopath
 gin delete $repopath <<< $repopath

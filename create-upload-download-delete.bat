@@ -56,7 +56,7 @@ gin ls
 rem should be 5
 gin ls -s | grep "^NC" | wc -l
 
-git annex uninit
+gin annex uninit
 popd
 rd /s /q %reponame%
 echo %repopath%| gin delete %repopath%

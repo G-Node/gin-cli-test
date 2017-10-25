@@ -31,7 +31,7 @@ false
 
 # create randfiles
 # cleanup
-git annex uninit
+gin annex uninit
 popd
 rm -rf $repopath
 gin delete $repopath <<< $repopath

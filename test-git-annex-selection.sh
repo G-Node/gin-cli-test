@@ -59,7 +59,7 @@ echo "I am a foo file" > biscuits.foo
 gin upload biscuits.foo
 
 # delete local directory
-git annex uninit || true
+gin annex uninit || true
 popd
 rm -rf "$reponame"
 
@@ -93,7 +93,7 @@ gin get-content .
 md5sum -c "${testroot}/${reponame}.md5"
 
 # cleanup
-git annex uninit || true
+gin annex uninit || true
 popd
 rm -rf $reponame
 gin delete $repopath <<< $repopath

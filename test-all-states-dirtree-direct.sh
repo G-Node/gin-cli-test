@@ -17,7 +17,7 @@ gin create $reponame "Test repository --- Created with test scripts"
 pushd $reponame
 
 echo "************ SWITCHING TO DIRECT MODE ************"
-git annex direct
+gin annex direct
 
 # create files in root to be annexed
 for idx in {070..090}
@@ -44,7 +44,7 @@ done
 gin upload .
 
 # should have 3 commits so far
-[ $(git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
+[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
 
 # Create more root files that will remain UNTRACKED
 for idx in {a..f}
@@ -114,9 +114,9 @@ gin upload files-for-git
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 26 ]
 
 # none of these files should be in annex
-[ $(git annex status files-for-git | wc -l) -eq 0 ]
+[ $(gin annex status files-for-git | wc -l) -eq 0 ]
 
-if [ "$(git config --local core.symlinks)" != "false" ]
+if [ "$(gin git config --local core.symlinks)" != "false" ]
 then
     # NC files are broken symlinks
     [ $(find . -xtype l | wc -l) -eq 12 ]
@@ -126,7 +126,7 @@ else
 fi
 
 # cleanup
-git annex uninit || true
+gin annex uninit || true
 popd
 rm -rf $repopath
 gin delete $repopath <<< $repopath
