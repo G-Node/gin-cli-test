@@ -58,6 +58,11 @@ echo "I am a foo file" > biscuits.foo
 # upload foo file
 gin upload biscuits.foo
 
+# create a py file that (for some reason) is larger than the configured annex threshold
+# this should be added to git because it matches the pattern even though it's larger than the threshold
+mkannexfile bigscript.py
+gin upload .
+
 # delete local directory
 gin annex uninit || true
 popd
@@ -69,7 +74,7 @@ gin get $repopath
 pushd $reponame
 
 # git files should be here
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 3 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 4 ]
 
 # both rand files should be NC
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 2 ]
@@ -78,8 +83,8 @@ pushd $reponame
 
 # download first rand file
 gin get-content $fname1
-# one file should be NC and the other OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 4 ]
+# one file should be NC and the rest OK
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 5 ]
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 1 ]
 # one checksum should fail and one should succeed
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "OK" | wc -l ) -eq 1 ]
@@ -87,8 +92,8 @@ gin get-content $fname1
 
 # download everything
 gin get-content .
-# both files dhould be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 5 ]
+# both files should be OK
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 6 ]
 # both checksums should succeed
 md5sum -c "${testroot}/${reponame}.md5"
 
