@@ -53,8 +53,9 @@ pushd $reponame
 
 # both should be NC
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 2 ]
-# both checksums should fail; md5sum should warn about missing files because of broken links
-[ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 2 ]
+# shoud have 2 broken links
+[ $(find -L . -type l | wc -l) -eq 2 ]
+
 
 # download first file
 gin get-content $fname1
@@ -63,7 +64,7 @@ gin get-content $fname1
 [ $(gin ls --short | fgrep "NC" | wc -l ) -eq 1 ]
 # one checksum should fail and one should succeed
 [ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "OK" | wc -l ) -eq 1 ]
-[ $(md5sum -c "${testroot}/${reponame}.md5" | fgrep "FAILED" | wc -l ) -eq 1 ]
+[ $(find -L . -type l | wc -l) -eq 1 ]
 
 # download everything
 gin get-content .
