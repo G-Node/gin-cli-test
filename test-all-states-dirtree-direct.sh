@@ -20,7 +20,7 @@ echo "************ SWITCHING TO DIRECT MODE ************"
 gin annex direct
 
 # create files in root to be annexed
-for idx in {070..090}
+for idx in {70..90}
 do
     fname=root-$idx.annex
     mkannexfile $fname
@@ -33,7 +33,7 @@ gin upload .
 
 
 # modify them
-for idx in {070..090}
+for idx in {70..90}
 do
     fname=root-$idx.annex
     mkannexfile $fname
@@ -59,7 +59,7 @@ do
     dirname=subdir-$idx
     mkdir -v $dirname
     pushd $dirname
-    for jdx in {01..10}
+    for jdx in {1..10}
     do
         fname=subfile-$jdx.annex
         mkannexfile $fname
@@ -68,7 +68,7 @@ do
 done
 
 # Upload the files of the first subdirectory only and a couple from the second
-gin upload subdir-a subdir-b/subfile-05.annex subdir-b/subfile-10.annex
+gin upload subdir-a subdir-b/subfile-5.annex subdir-b/subfile-10.annex
 
 
 # should only have 12 new synced files
@@ -87,7 +87,7 @@ done
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 0 ]
 
 # drop some files and check the counts
-gin rmc subdir-b/subfile-05.annex
+gin rmc subdir-b/subfile-5.annex
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 1 ]
 
 gin rmc subdir-b
@@ -103,7 +103,7 @@ gin remove-content subdir-a
 # Create some small files that should be added to git (not annex)
 mkdir -v files-for-git
 pushd files-for-git
-for idx in {01..05}
+for idx in {1..5}
 do
     fname=subfile-$idx.git
     mkgitfile $fname
@@ -119,7 +119,7 @@ gin upload files-for-git
 if [ "$(gin git config --local core.symlinks)" != "false" ]
 then
     # NC files are broken symlinks
-    [ $(find . -xtype l | wc -l) -eq 12 ]
+    [ $(find -L . -type l | wc -l) -eq 12 ]
 else
     # NC files are pointer files to annex
     [ $(grep -F "git/annex/objects" -r . | wc -l) -eq 12 ]

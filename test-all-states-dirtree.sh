@@ -17,13 +17,13 @@ gin create $reponame "Test repository --- Created with test scripts"
 pushd $reponame
 
 # create files in root
-for idx in {000..050}
+for idx in {0..50}
 do
     fname=root-$idx.git
     mkgitfile $fname
     gin git add $fname
 done
-for idx in {070..090}
+for idx in {70..90}
 do
     fname=root-$idx.annex
     mkannexfile $fname
@@ -54,7 +54,7 @@ do
     dirname=subdir-$idx
     mkdir -v $dirname
     pushd $dirname
-    for jdx in {01..10}
+    for jdx in {1..10}
     do
         fname=subfile-$jdx.annex
         mkannexfile $fname
@@ -63,9 +63,9 @@ do
 done
 
 # Upload the files of the first subdirectory only and a couple from the second
-gin upload subdir-a subdir-b/subfile-05.annex subdir-b/subfile-10.annex
+gin upload subdir-a subdir-b/subfile-5.annex subdir-b/subfile-10.annex
 
-# should only have 10 new synced files
+# should only have 12 new synced files
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
 # there should be 56 untracked files total
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 54 ]
@@ -78,7 +78,7 @@ do
 done
 
 # Unlock some files
-gin unlock root-070.annex root-075.annex root-084.annex
+gin unlock root-70.annex root-75.annex root-84.annex
 
 # Unlocked files should be marked UL
 [ $(gin ls --short | grep -F "UL" | wc -l) -eq 3 ]
@@ -96,17 +96,17 @@ pushd subdir-a
 popd
 
 # Relock one of the files
-gin lock root-084.annex
+gin lock root-84.annex
 [ $(gin ls --short | grep -F "UL" | wc -l) -eq 12 ]
 
 # check one of thee remaining unlocked files explicitly
-[ $(gin ls --short root-070.annex | grep -F "UL" | wc -l) -eq 1 ]
+[ $(gin ls --short root-70.annex | grep -F "UL" | wc -l) -eq 1 ]
 
 # There should be no NC files so far
 [ $(gin ls --short | grep -F "NC" | wc -l) -eq 0 ]
 
 # drop some files and check the counts
-gin rmc subdir-b/subfile-05.annex
+gin rmc subdir-b/subfile-5.annex
 [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 1 ]
 
 gin rmc subdir-b
@@ -118,7 +118,7 @@ gin remove-content subdir-a
 [ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
 
 # NC files are broken symlinks
-[ $(find . -xtype l | wc -l) -eq 12 ]
+[ $(find -L . -type l   | wc -l) -eq 12 ]
 
 # cleanup
 gin annex uninit || true
