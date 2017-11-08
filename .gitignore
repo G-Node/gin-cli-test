@@ -13,3 +13,5 @@ token
 
 # gin server stuff
 gin-data/ssh/
+gin-data/gogs-repositories/
+gin-data/gogs/data/sessions/
