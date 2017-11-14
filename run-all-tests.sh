@@ -31,4 +31,4 @@ then
     exit 1
 fi
 
-echo "All tests succeeded"
+echo "All tests completed successfully"
