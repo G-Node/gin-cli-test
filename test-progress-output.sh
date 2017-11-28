@@ -25,6 +25,9 @@ dd if=/dev/urandom of=$fname1 bs=3M count=20 2> /dev/null
 fname2="file-${RANDOM}.rnd"
 echo "Creating $fname2"
 dd if=/dev/urandom of=$fname2 bs=3M count=30 2> /dev/null
+fname3="file-${RANDOM}.rnd"
+echo "Creating $fname3"
+dd if=/dev/urandom of=$fname3 bs=1M count=30 2> /dev/null
 
 # upload files
 echo ">>> gin upload"
