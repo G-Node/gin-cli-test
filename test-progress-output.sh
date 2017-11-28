@@ -31,6 +31,13 @@ echo ">>> gin upload"
 gin upload .
 echo "<<<"
 
+# make some git files and upload them
+for idx in {1..4}
+do
+    mkgitfile gitfile-$idx
+done
+gin upload gitfile-*
+
 # delete local directory
 gin annex uninit || true
 popd
@@ -52,7 +59,7 @@ echo ">>> gin get-content"
 gin get-content .
 echo "<<<"
 # both files should be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 2 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 6 ]
 
 # cleanup
 gin annex uninit || true
