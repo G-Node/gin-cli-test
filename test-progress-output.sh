@@ -61,7 +61,7 @@ echo "<<<"
 echo ">>> gin get-content"
 gin get-content .
 echo "<<<"
-# both files should be OK
+# all files should be OK
 [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
 
 # modify one annex and one git file
@@ -73,6 +73,29 @@ mkannexfile $fname1
 
 # upload again
 gin upload .
+
+# delete local again
+gin annex uninit || true
+popd
+rm -rf "$reponame"
+
+# once more using download command
+echo ">>> gin get"
+gin get $repopath
+pushd $reponame
+
+# do a gin download without content
+echo ">>> gin download"
+gin download
+echo "<<<"
+
+# now get all content
+echo ">>> gin download --content"
+gin download --content
+echo "<<<"
+
+# all files should be OK
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
 
 # cleanup
 gin annex uninit || true
