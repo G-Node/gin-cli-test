@@ -59,7 +59,17 @@ echo ">>> gin get-content"
 gin get-content .
 echo "<<<"
 # both files should be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 6 ]
+[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
+
+# modify one annex and one git file
+echo "Mofifying gitfile-4"
+mkgitfile gitfile-4
+echo "Modifying $fname1"
+gin unlock $fname1
+mkannexfile $fname1
+
+# upload again
+gin upload .
 
 # cleanup
 gin annex uninit || true
