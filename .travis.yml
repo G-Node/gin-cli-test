@@ -15,5 +15,5 @@ before_install:
 script:
     - ./run-all-tests.sh
 
-after_script:
-    - cat ./log/gin/gin.log
+# after_script:
+#     - cat ./log/gin/gin.log
