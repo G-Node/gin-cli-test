@@ -21,6 +21,7 @@ pushd $reponame
 
 # create local config file which sets filesize threshold to 0kb
 echo -e "annex:\n    minsize: 0kB" > config.yml
+echo -e "bin:\n    gitannex: ls" >> config.yml
 
 # gitfile should be added to annex now
 mkgitfile smallfile
