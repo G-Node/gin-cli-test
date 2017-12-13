@@ -128,7 +128,7 @@ fi
 # modify 2 git files and check their status
 mkgitfile files-for-git/subfile-3.git
 mkgitfile files-for-git/subfile-2.git
-[ $(gin ls --short files-for-git | grep -F "LC" | wc -l) -eq 2 ]
+[ $(gin ls --short files-for-git | grep -F "MD" | wc -l) -eq 2 ]
 
 # cleanup
 gin annex uninit || true
