@@ -37,6 +37,10 @@ gin upload anotherfile.md
 # should not be a symlink
 [ ! -L anotherfile.md ]
 
+# config file should be automatically exluded regardless of thresholds and patterns
+gin upload config.yml
+[ ! -L config.yml ]
+
 # cleanup
 gin annex uninit || true
 popd
