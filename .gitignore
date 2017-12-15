@@ -11,7 +11,5 @@ token
 # macOS junk
 .DS_Store
 
-# gin server stuff
-gin-data/ssh/
-gin-data/gogs-repositories/
-gin-data/gogs/data/sessions/
+# "Live" server data
+gin-data
