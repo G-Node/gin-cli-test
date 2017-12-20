@@ -45,7 +45,7 @@ class Runner(object):
 
     def cleanup(self, repo):
         repopath = f"{self.username}/{repo}"
-        self.runcommand("gin", "annex", "uninit")
+        self.runcommand("gin", "annex", "uninit", exit=False)
         self.runcommand("gin", "delete", repopath, inp=repopath)
 
     def logout(self):
