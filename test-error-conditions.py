@@ -3,15 +3,12 @@ from random import randint
 from runner import Runner
 
 
-username = "testuser"
-password = "a test password 42"
-
 norepoerr = "ERROR This command must be run from inside a gin repository."
 
 r = Runner()
 
-out, err = r.runcommand("gin", "login", username, inp=password)
-
+r.login()
+username = r.username
 
 commands = [
     "upload",
@@ -30,7 +27,7 @@ for cmd in commands:
 out, err = r.runcommand("gin", "lock", "foobar", exit=False)
 assert err == norepoerr, f"Unexpected error output {err}"
 
-# # create repo (remote and local) and cd into directory
+# create repo (remote and local) and cd into directory
 reponame = f"gin-test-{randint(0, 9999):04}"
 repopath = f"{username}/{reponame}"
 r.runcommand("gin", "create", reponame,
@@ -41,12 +38,7 @@ out, err = r.runcommand("gin", "lock", "foobar", exit=False)
 assert out == "Error: No files matched foobar"
 assert err == "ERROR 1 operation failed", f"Unexpected error output {err}"
 
-# create randfiles
-# cleanup
-
-r.runcommand("gin", "annex", "uninit")
-r.runcommand("gin", "delete", repopath, inp=repopath)
-
-r.runcommand("gin", "logout")
+r.cleanup(reponame)
+r.logout()
 
 print("DONE!")

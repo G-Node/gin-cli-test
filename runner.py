@@ -6,6 +6,8 @@ import tempfile
 
 class Runner(object):
 
+    username = "testuser"
+
     def __init__(self):
         self.loc = os.path.dirname(os.path.abspath(__file__))
         self.env = {
@@ -34,3 +36,15 @@ class Runner(object):
     def cdrel(self, path):
         self.cmdloc = os.path.abspath(os.path.join(self.cmdloc, path))
         print(f"New dir: {self.cmdloc}")
+
+    def login(self, username=username, password="a test password 42"):
+        self.username = username
+        return self.runcommand("gin", "login", username, inp=password)
+
+    def cleanup(self, repo):
+        repopath = f"{self.username}/{repo}"
+        self.runcommand("gin", "annex", "uninit")
+        self.runcommand("gin", "delete", repopath, inp=repopath)
+
+    def logout(self):
+        self.runcommand("gin", "logout")
