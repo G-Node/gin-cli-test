@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Upload and download larger files and observe output.
-# This isn't really a test.
+# This isn't really a test and requires human eyeballs.
 
 set -e
 
