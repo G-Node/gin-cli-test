@@ -4,7 +4,7 @@ cd $loc
 errorcount=0
 errored=()
 
-for testscript in test-*.sh
+for testscript in test-*.{sh,py}
 do
     ./$testscript
     teststatus=$?
