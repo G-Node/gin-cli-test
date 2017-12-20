@@ -76,43 +76,55 @@ r.runcommand("gin", "unlock", "root-70.annex",
              "root-75.annex", "root-84.annex")
 
 # # Unlocked files should be marked UL
-# [ $(gin ls --short | grep -F "UL" | wc -l) -eq 3 ]
-r.runcommand("gin", "ls", "--short")
-
+unlocked = lscount(fltr="UL")
+assert unlocked == 3, f"Expected 3 files, got {unlocked}"
 
 # # Unlock a whole directory
-# gin unlock subdir-a
-# [ $(gin ls --short | grep -F "UL" | wc -l) -eq 13 ]
+r.runcommand("gin", "unlock", "subdir-a")
+unlocked = lscount(fltr="UL")
+assert unlocked == 13, f"Expected 13 files, got {unlocked}"
 
 # # Check subdirectory only
-# [ $(gin ls --short subdir-a | grep -F "UL" | wc -l) -eq 10 ]
+unlocked = lscount("subdir-a", fltr="UL")
+assert unlocked == 10, f"Expected 10 files, got {unlocked}"
 
 # # Check again but from within the subdir
 # pushd subdir-a
-# [ $(gin ls --short | grep -F "UL" | wc -l) -eq 10 ]
-# popd
+r.cdrel("subdir-a")
+unlocked = lscount(fltr="UL")
+assert unlocked == 10, f"Expected 10 files, got {unlocked}"
+r.cdrel("..")
 
-# # Relock one of the files
+# Relock one of the files
 # gin lock root-84.annex
-# [ $(gin ls --short | grep -F "UL" | wc -l) -eq 12 ]
+r.runcommand("gin", "lock", "root-84.annex")
+unlocked = lscount(fltr="UL")
+assert unlocked == 12, f"Expected 12 files, got {unlocked}"
 
-# # check one of thee remaining unlocked files explicitly
-# [ $(gin ls --short root-70.annex | grep -F "UL" | wc -l) -eq 1 ]
+# check one of thee remaining unlocked files explicitly
+unlocked = lscount("root-70.annex", fltr="UL")
+assert unlocked == 1, f"Expected 1 files, got {unlocked}"
 
-# # There should be no NC files so far
-# [ $(gin ls --short | grep -F "NC" | wc -l) -eq 0 ]
+# There should be no NC files so far
+nocont = lscount(fltr="NC")
+assert nocont == 0, f"Expected 0 files, got {nocont}"
 
-# # drop some files and check the counts
-# gin rmc subdir-b/subfile-5.annex
-# [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 1 ]
+# drop some files and check the counts
+r.runcommand("gin", "rmc", "subdir-b/subfile-5.annex")
+nocont = lscount("subdir-b", fltr="NC")
+assert nocont == 1, f"Expected 1 files, got {nocont}"
 
-# gin rmc subdir-b
-# [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 2 ]
+r.runcommand("gin", "rmc", "subdir-b")
+nocont = lscount("subdir-b", fltr="NC")
+assert nocont == 2, f"Expected 2 files, got {nocont}"
 
-# gin remove-content subdir-a
-# [ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 2 ]
-# [ $(gin ls --short subdir-a | grep -F "NC" | wc -l) -eq 10 ]
-# [ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
+r.runcommand("gin", "remove-content", "subdir-a")
+nocont = lscount("subdir-b", fltr="NC")
+assert nocont == 2, f"Expected 2 files, got {nocont}"
+nocont = lscount("subdir-a", fltr="NC")
+assert nocont == 10, f"Expected 10 files, got {nocont}"
+nocont = lscount(fltr="NC")
+assert nocont == 12, f"Expected 12 files, got {nocont}"
 
 # # NC files are broken symlinks
 # [ $(find -L . -type l   | wc -l) -eq 12 ]

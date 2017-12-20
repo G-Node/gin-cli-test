@@ -13,3 +13,5 @@ token
 
 # "Live" server data
 gin-data
+
+__pycache__
