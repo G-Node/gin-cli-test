@@ -17,6 +17,7 @@ class Runner(object):
         }
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name
+        os.chdir(self.cmdloc)
 
     def runcommand(self, *args, inp=None, exit=True):
         print(f"> {' '.join(args)}")
@@ -35,6 +36,7 @@ class Runner(object):
 
     def cdrel(self, path):
         self.cmdloc = os.path.abspath(os.path.join(self.cmdloc, path))
+        os.chdir(self.cmdloc)
         print(f"New dir: {self.cmdloc}")
 
     def login(self, username=username, password="a test password 42"):
