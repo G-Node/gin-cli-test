@@ -1,12 +1,11 @@
-#!/usr/bin/env python
 import os
 from random import randint
 from runner import Runner
 import util
 
 
-def main():
-    norepoerr = "ERROR This command must be run from inside a gin repository."
+def test_errors():
+    norepoerr = "This command must be run from inside a gin repository."
 
     r = Runner()
 
@@ -26,11 +25,11 @@ def main():
     for cmd in commands:
         # On directory
         out, err = r.runcommand("gin", cmd, ".", exit=False)
-        assert err == norepoerr, f"Unexpected error output {err}"
+        assert err == norepoerr
 
         # On specific file
         out, err = r.runcommand("gin", cmd, "foobar", exit=False)
-        assert err == norepoerr, f"Unexpected error output {err}"
+        assert err == norepoerr
 
     # create repo (remote and local) and cd into directory
     reponame = f"gin-test-{randint(0, 9999):04}"
@@ -41,13 +40,12 @@ def main():
 
     # Unable to run any command on file that does not exist (download ignored)
     out, err = r.runcommand("gin", "upload", "foobar", exit=False)
-    assert out == "Error: No files matched foobar"
-    assert err == "ERROR 1 operation failed", f"Unexpected error output {err}"
+    assert out == "No files matched foobar"
+    assert err == "1 operation failed"
     for cmd in commands[2:]:
         out, err = r.runcommand("gin", cmd, "foobar", exit=False)
-        assert out == "Error: No files matched foobar"
-        assert err == "ERROR 1 operation failed", (f"Unexpected error output"
-                                                   "{err}")
+        assert out == "No files matched foobar"
+        assert err == "1 operation failed"
 
     # make a few annex and git files
     os.mkdir("smallfiles")
@@ -79,7 +77,7 @@ def main():
             assert line.strip().endswith("is not under gin control")
 
     out, err = r.runcommand("gin", "upload", "smallfiles")
-    assert not err, f"Unexpected error output {err}"
+    assert not err
 
     # Unable to lock, unlock, getc, rmc on files in git (not annex)
     for cmd in commands[2:]:
@@ -118,14 +116,9 @@ def main():
     )
 
     out, err = r.runcommand("gin", "repos")
-    assert out.contains(anotherrepo), (f"{anotherrepo} was not "
-                                       "created on the server")
+    assert out.contains(anotherrepo)
 
     r.cleanup(reponame)
     r.logout()
 
     print("DONE!")
-
-
-if __name__ == "__main__":
-    main()
