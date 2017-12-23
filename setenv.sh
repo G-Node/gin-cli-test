@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -xeu
-
 loc=$(cd $(dirname $0) && pwd)
 
 mkgitfile() {
