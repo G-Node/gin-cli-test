@@ -11,7 +11,7 @@ mkannexfile() {
 }
 
 export GIN_CONFIG=$loc/conf/g-node/gin/config.yml
-export GIN_LOG=$loc/log/gin/gin.log
+export GIN_LOG=$loc/log/g-node/gin/gin.log
 
 username=testuser
 password="a test password 42"
