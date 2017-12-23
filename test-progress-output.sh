@@ -3,8 +3,7 @@
 # Upload and download larger files and observe output.
 # This isn't really a test and requires human eyeballs.
 
-set -e
-
+set -xeu
 source ./setenv.sh
 
 testroot="/tmp/gintest"

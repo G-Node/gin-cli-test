@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -x
-set -e
+set -xeu
 source ./setenv.sh
 
 testroot="/tmp/gintest"

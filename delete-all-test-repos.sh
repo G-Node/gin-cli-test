@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -xeu
 source ./setenv.sh
 
 gin login $username <<< $password

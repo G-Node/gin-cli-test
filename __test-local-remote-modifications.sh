@@ -9,10 +9,7 @@
 #  7. Check that gin ls reports local changes correctly
 #  8.
 
-set -x
-set -e
-
-
+set -xeu
 source ./setenv.sh
 
 testroot="/tmp/gintest"

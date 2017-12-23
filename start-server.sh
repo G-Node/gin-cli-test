@@ -1,5 +1,8 @@
+#!/usr/bin/env bash
+
+set -xeu
+
 loc=$(cd $(dirname $0) && pwd)
-set -x
 
 cp -a "${loc}/gin-data.init/." "${loc}/gin-data"
 

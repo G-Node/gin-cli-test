@@ -16,10 +16,7 @@
 #  14. Download the second file and check that both files have content and correct md5 hashes
 #  15. Delete the local copy of the repository
 
-set -x
-set -e
-
-
+set -xeu
 source ./setenv.sh
 
 testroot="/tmp/gintest"
