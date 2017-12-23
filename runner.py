@@ -12,8 +12,9 @@ class Runner(object):
         self.loc = os.path.dirname(os.path.abspath(__file__))
         self.env = {
             "PATH": os.environ.get("PATH"),
-            "XDG_CONFIG_HOME": os.path.join(self.loc, "conf"),
-            "XDG_CACHE_HOME": os.path.join(self.loc, "log"),
+            "GIN_CONFIG": os.path.join(self.loc,
+                                       "conf/g-node/gin/config.yml"),
+            "GIN_LOG": os.path.join(self.loc, "log/gin/gin.log"),
         }
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name

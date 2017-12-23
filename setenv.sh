@@ -12,8 +12,8 @@ mkannexfile() {
     dd if=/dev/urandom of=$1 bs=100k count=1
 }
 
-export XDG_CONFIG_HOME=$loc/conf
-export XDG_CACHE_HOME=$loc/log
+export GIN_CONFIG=$loc/conf/g-node/gin/config.yml
+export GIN_LOG=$loc/log/gin/gin.log
 
 username=testuser
 password="a test password 42"

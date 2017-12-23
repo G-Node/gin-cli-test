@@ -7,8 +7,8 @@ set "gitpaths=%ginloc%\git\usr\bin;%ginloc%\git\bin"
 
 set "PATH=%ginbinpath%;%gitpaths%;%path%"
 
-set "XDG_CONFIG_HOME=%loc%\conf"
-set "XDG_DATA_HOME=%loc%\log"
+set "GIN_CONFIG=%loc%\conf\g-node\gin\config.yml"
+set "XDG_DATA_HOME=%loc%\log\gin\gin.log"
 
 set username=achilleas
 set password=
