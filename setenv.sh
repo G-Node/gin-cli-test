@@ -10,8 +10,8 @@ mkannexfile() {
     dd if=/dev/urandom of=$1 bs=100k count=1
 }
 
-export GIN_CONFIG=$loc/conf/g-node/gin/config.yml
-export GIN_LOG=$loc/log/g-node/gin/gin.log
+export GIN_CONFIG_DIR=$loc/conf
+export GIN_LOG_DIR=$loc/log
 
 username=testuser
 password="a test password 42"

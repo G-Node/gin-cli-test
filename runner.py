@@ -11,9 +11,8 @@ class Runner(object):
     def __init__(self):
         self.loc = os.path.dirname(os.path.abspath(__file__))
         self.env = os.environ
-        self.env["GIN_CONFIG"] = os.path.join(self.loc,
-                                              "conf/g-node/gin/config.yml")
-        self.env["GIN_LOG"] = os.path.join(self.loc, "log/g-node/gin/gin.log")
+        self.env["GIN_CONFIG_DIR"] = os.path.join(self.loc, "conf")
+        self.env["GIN_LOG_DIR"] = os.path.join(self.loc, "log")
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name
         os.chdir(self.cmdloc)
