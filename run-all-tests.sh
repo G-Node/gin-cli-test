@@ -20,6 +20,9 @@ done
 
 for testscript in test-*.py
 do
+    # Not the most efficient, since we could just do pytest *.py
+    # but helps with pointing out failures.
+    # Will replace with single command when all tests are pytests.
     pytest $testscript
     teststatus=$?
     if [ $teststatus -ne 0 ]
