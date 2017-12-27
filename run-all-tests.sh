@@ -6,9 +6,21 @@ cd $loc
 errorcount=0
 errored=()
 
-for testscript in test-*.{sh,py}
+for testscript in test-*.sh
 do
     ./$testscript
+    teststatus=$?
+    if [ $teststatus -ne 0 ]
+    then
+        echo "Test $testscript failed"
+        errorcount=$((errorcount+1))
+        errored+=("$testscript")
+    fi
+done
+
+for testscript in test-*.py
+do
+    pytest $testscript
     teststatus=$?
     if [ $teststatus -ne 0 ]
     then
