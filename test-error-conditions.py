@@ -51,30 +51,36 @@ def test_errors():
     os.mkdir("smallfiles")
     r.cdrel("smallfiles")
     for idx in range(20):
-        util.mkrandfile(f"smallfile-{idx:3}", 20)
+        util.mkrandfile(f"smallfile-{idx:03}", 20)
     r.cdrel("..")
     os.mkdir("datafiles")
     r.cdrel("datafiles")
     for idx in range(5):
-        util.mkrandfile(f"datafile-{idx:3}", 2000)
+        util.mkrandfile(f"datafile-{idx:03}", 2000)
     r.cdrel("..")
 
     # Unable to lock, unlock, getc, rmc on untracked file(s)
     for cmd in commands[2:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
         assert err, "Expected error, got nothing"
-        for line in err.splitlines():
+        errlines = err.splitlines()
+        for line in errlines[:-1]:
             assert line.strip().endswith("is not under gin control")
+        assert errlines[-1].strip() == "20 operations failed"
 
         out, err = r.runcommand("gin", cmd, "datafiles", exit=False)
         assert err, "Expected error, got nothing"
-        for line in err.splitlines():
+        errlines = err.splitlines()
+        for line in errlines[:-1]:
             assert line.strip().endswith("is not under gin control")
+        assert errlines[-1].strip() == "5 operations failed"
 
         out, err = r.runcommand("gin", cmd, "datafiles/*", exit=False)
         assert err, "Expected error, got nothing"
-        for line in err.splitlines():
+        errlines = err.splitlines()
+        for line in errlines[:-1]:
             assert line.strip().endswith("is not under gin control")
+        assert errlines[-1].strip() == "5 operations failed"
 
     out, err = r.runcommand("gin", "upload", "smallfiles")
     assert not err
