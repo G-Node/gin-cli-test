@@ -59,37 +59,29 @@ def test_errors():
         util.mkrandfile(f"datafile-{idx:03}", 2000)
     r.cdrel("..")
 
-    # Unable to lock, unlock, getc, rmc on untracked file(s)
+    # No output on lock, unlock, getc, rmc on untracked file(s)
     for cmd in commands[2:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
-        assert err, "Expected error, got nothing"
-        errlines = err.splitlines()
-        for line in errlines[:-1]:
-            assert line.strip().endswith("is not under gin control")
-        assert errlines[-1].strip() == "20 operations failed"
+        assert not out
+        assert not err
 
         out, err = r.runcommand("gin", cmd, "datafiles", exit=False)
-        assert err, "Expected error, got nothing"
-        errlines = err.splitlines()
-        for line in errlines[:-1]:
-            assert line.strip().endswith("is not under gin control")
-        assert errlines[-1].strip() == "5 operations failed"
+        assert not out
+        assert not err
 
         out, err = r.runcommand("gin", cmd, "datafiles/*", exit=False)
-        assert err, "Expected error, got nothing"
-        errlines = err.splitlines()
-        for line in errlines[:-1]:
-            assert line.strip().endswith("is not under gin control")
-        assert errlines[-1].strip() == "5 operations failed"
+        assert not out
+        assert not err
 
     out, err = r.runcommand("gin", "upload", "smallfiles")
+    assert out, "Expected output, got nothing"
     assert not err
 
-    # Unable to lock, unlock, getc, rmc on files in git (not annex)
+    # No output on lock, unlock, getc, rmc on non-annexed file(s)
     for cmd in commands[2:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
-        assert err, "Expected error, got nothing"
-        assert err.contains("cannot remove content")
+        assert not out
+        assert not err
 
     out, err = r.runcommand("gin", "upload", "datafiles")
     out, err = r.runcommand("gin", "rmc", "datafiles")
