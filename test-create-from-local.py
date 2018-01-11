@@ -3,7 +3,7 @@ from runner import Runner
 import util
 
 
-def main():
+def test_create_from_local():
     r = Runner()
     r.login()
     # username = r.username
@@ -132,7 +132,3 @@ def main():
     r.logout()
 
     print("Done!")
-
-
-if __name__ == "__main__":
-    main()
