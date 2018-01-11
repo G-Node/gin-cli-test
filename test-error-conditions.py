@@ -10,7 +10,7 @@ def test_errors():
     r = Runner()
 
     r.login()
-    username = r.username
+    # username = r.username
 
     commands = [
         "upload",
@@ -33,7 +33,7 @@ def test_errors():
 
     # create repo (remote and local) and cd into directory
     reponame = f"gin-test-{randint(0, 9999):04}"
-    repopath = f"{username}/{reponame}"
+    # repopath = f"{username}/{reponame}"
     r.runcommand("gin", "create", reponame,
                  "Test repository for error output. Created with test scripts")
     r.cdrel(reponame)
@@ -88,8 +88,10 @@ def test_errors():
 
     # Unable to unlock without content
     out, err = r.runcommand("gin", "unlock", "datafiles", exit=False)
-    for line in err.splitlines():
+    errlines = err.splitlines()
+    for line in errlines[:-1]:
         assert line.strip().endswith("Content not available locally")
+    assert errlines[-1].strip() == "5 operations failed"
 
     # TODO: Change server address and try go get-content
 
@@ -99,22 +101,26 @@ def test_errors():
     r.cdrel("..")
 
     out, err = r.runcommand("gin", "create", reponame, exit=False)
-    assert err == f"Repository {repopath} already exists"
+    assert err == ("invalid repository name or repository with the same name"
+                   " already exists")
 
+    # Creating repository but local directory already exists (non-empty)
     anotherrepo = f"gin-test-{randint(0, 9999):04}"
+    print(f"Creating directory '{anotherrepo}'")
     os.mkdir(anotherrepo)
+    util.mkrandfile(os.path.join(anotherrepo, f"hold"), 20)
 
-    # Creating repository but local directory already exists
     out, err = r.runcommand("gin", "create", anotherrepo, exit=False)
-    assert (out.contains("Creating repository") and
-            out.contains("OK")), f"Failed to create {anotherrepo} on server"
-    assert err == (
-        f"Failed to download. Directory '{anotherrepo}' "
-        "already exists and is not empty."
+    assert ("Creating repository" in out
+            and "OK" in out), f"Failed to create {anotherrepo} on server"
+    assert out.endswith(
+        f"Repository download failed. '{anotherrepo}' already exists in the "
+        "current directory and is not empty."
     )
+    assert err == "1 operation failed"
 
     out, err = r.runcommand("gin", "repos")
-    assert out.contains(anotherrepo)
+    assert anotherrepo in out
 
     r.cleanup(reponame)
     r.logout()
