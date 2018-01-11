@@ -2,6 +2,8 @@
 
 set -xeu
 
+docker pull gnode/ginhome
+
 loc=$(cd $(dirname $0) && pwd)
 
 cp -a "${loc}/gin-data.init/." "${loc}/gin-data"
