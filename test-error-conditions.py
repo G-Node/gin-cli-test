@@ -1,7 +1,11 @@
 import os
+import shutil
+import yaml
+import re
 from random import randint
 from runner import Runner
 import util
+import tempfile
 
 
 def test_errors():
@@ -93,9 +97,39 @@ def test_errors():
         assert line.strip().endswith("Content not available locally")
     assert errlines[-1].strip() == "5 operations failed"
 
-    # TODO: Change server address and try go get-content
+    # Change server address:port and key and test failures
+    goodconfdir = r.env["GIN_CONFIG_DIR"]
+    badconftemp = tempfile.TemporaryDirectory(prefix="badconf")
+    badconfdir = os.path.join(badconftemp.name, "conf")
+    r.env["GIN_CONFIG_DIR"] = badconfdir
+    shutil.copytree(goodconfdir, badconfdir)
+    with open(os.path.join(goodconfdir, "config.yml")) as conffile:
+        confdata = yaml.load(conffile.read())
+
+    # ruin key
+    with open(os.path.join(badconfdir, "testuser.key"), "r+") as keyfile:
+        key = keyfile.read()
+        key = re.sub(r"[a-z]", r"x", key)
+        keyfile.seek(0)
+        keyfile.write(key)
+        keyfile.truncate()
+
+    out, err = r.runcommand("gin", "get-content", "datafiles")
+    assert err, "Expected error, got nothing"
+
+    confdata["gin"]["port"] = 1
+    confdata["git"]["port"] = 1
+    with open(os.path.join(badconfdir, "config.yml"), "w") as conffile:
+        conffile.write(yaml.dump(confdata))
+    out, err = r.runcommand("gin", "create", "ThisShouldFail")
+    assert err, "Expected error, got nothing"
+    assert err == ("server refused connection - "
+                   "check configuration or try logging in again")
 
     # TODO: Figure out how to simulate not-enough-free-space
+
+    # Recover good config
+    r.env["GIN_CONFIG_DIR"] = goodconfdir
 
     # Creating repository that already exists
     r.cdrel("..")
