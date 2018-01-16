@@ -97,7 +97,20 @@ def test_errors():
         assert line.strip().endswith("Content not available locally")
     assert errlines[-1].strip() == "5 operations failed"
 
-    # Change server address:port and key and test failures
+    # change remote address/port and test get-content failure
+    out, err = r.runcommand("git", "remote", "-v")
+    name, address, *_ = out.split()
+    address = address.replace("2222", "1")
+    r.runcommand("git", "remote", "set-url", name, address)
+
+    out, err = r.runcommand("gin", "get-content", "datafiles")
+    assert err, "Expected error, got nothing"
+
+    # revert remote change
+    address = address.replace("1", "2222")
+    r.runcommand("git", "remote", "set-url", name, address)
+
+    # Change server address:port and test failures
     goodconfdir = r.env["GIN_CONFIG_DIR"]
     badconftemp = tempfile.TemporaryDirectory(prefix="badconf")
     badconfdir = os.path.join(badconftemp.name, "conf")
