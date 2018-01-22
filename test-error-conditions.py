@@ -103,8 +103,11 @@ def test_errors():
     address = address.replace("2222", "1")
     r.runcommand("git", "remote", "set-url", name, address)
 
-    out, err = r.runcommand("gin", "get-content", "datafiles")
+    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
+    for line in errlines[:-1]:
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "5 operations failed"
 
     # revert remote change
     address = address.replace("1", "2222")
@@ -127,19 +130,23 @@ def test_errors():
         keyfile.write(key)
         keyfile.truncate()
 
-    out, err = r.runcommand("gin", "get-content", "datafiles")
+    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
+    for line in errlines[:-1]:
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "5 operations failed"
 
     confdata["gin"]["port"] = 1
     confdata["git"]["port"] = 1
     with open(os.path.join(badconfdir, "config.yml"), "w") as conffile:
         conffile.write(yaml.dump(confdata))
-    out, err = r.runcommand("gin", "create", "ThisShouldFail")
+    out, err = r.runcommand("gin", "create", "ThisShouldFail", exit=False)
     assert err, "Expected error, got nothing"
-    assert err == ("server refused connection - "
-                   "check configuration or try logging in again")
+    errmsg = ("server refused connection - "
+              "check configuration or try logging in again")
+    assert err == errmsg
 
-    # TODO: Figure out how to simulate not-enough-free-space
+    # TODO: simulate not-enough-free-space
 
     # Recover good config
     r.env["GIN_CONFIG_DIR"] = goodconfdir
