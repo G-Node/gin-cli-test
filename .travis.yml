@@ -8,6 +8,7 @@ services:
     - docker
 
 before_install:
+    - pip install pyyaml
     - wget https://web.gin.g-node.org/achilleas/gin-cli-builds/raw/master/gin-cli-latest.deb
     - sudo dpkg -i gin-cli-latest.deb
     - export PATH=$PATH:/opt/gin/git-annex.linux/bin
