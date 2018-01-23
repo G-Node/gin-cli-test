@@ -137,8 +137,7 @@ def test_errors():
         conffile.write(yaml.dump(confdata))
     out, err = r.runcommand("gin", "create", "ThisShouldFail", exit=False)
     assert err, "Expected error, got nothing"
-    errmsg = ("server refused connection - "
-              "check configuration or try logging in again")
+    errmsg = "server refused connection"
     assert err == errmsg
 
     # TODO: simulate not-enough-free-space
