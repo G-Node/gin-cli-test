@@ -4,7 +4,7 @@ set -xeu
 
 loc=$(cd $(dirname $0) && pwd)
 
-docker exec gintest rm -rfv /data/*
+docker exec gintest rm -rfv /data/ssh
 docker kill gintest
 
 rm -r "${loc}/gin-data"
