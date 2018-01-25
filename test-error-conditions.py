@@ -121,6 +121,9 @@ def test_errors():
     with open(os.path.join(goodconfdir, "config.yml")) as conffile:
         confdata = yaml.load(conffile.read())
 
+    # TODO: remove key from server and perform gin get-content and gin
+    # download
+
     # ruin key
     # with open(os.path.join(badconfdir, "testuser.key"), "w") as keyfile:
     #     keyfile.truncate()
