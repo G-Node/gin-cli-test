@@ -6,7 +6,8 @@ source ./setenv.sh
 gin login $username <<< $password
 
 # collect all test repo names
-if testrepos=$(gin repos | grep -o "\w\+/gin-test-\(win-\)\?[0-9]\+" | sort -u)
+testrepos=$(gin repos | grep -o "\w\+/gin-test-\(win-\)\?[0-9]\+" | sort -u)
+if [[ "$testrepos" != "" ]]
 then
     echo "The following repositories will be deleted"
     for reponame in $testrepos
@@ -15,6 +16,8 @@ then
     done
     echo "Ctrl+C cancels"
     read
+else
+    echo "No test repos on server"
 fi
 
 # deleting
