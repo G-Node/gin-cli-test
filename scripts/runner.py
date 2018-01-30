@@ -17,17 +17,18 @@ class Runner(object):
         self.cmdloc = self.testroot.name
         os.chdir(self.cmdloc)
 
-    def runcommand(self, *args, inp=None, exit=True):
+    def runcommand(self, *args, inp=None, exit=True, echo=True):
         print(f"> {' '.join(args)}")
         if inp:
             inp += "\n"
         p = sp.run(args, env=self.env, stdout=sp.PIPE, stderr=sp.PIPE,
                    cwd=self.cmdloc, input=inp, encoding="utf-8")
         stdout, stderr = p.stdout.strip(), p.stderr.strip()
-        if stdout:
-            print(f"{stdout}")
-        if stderr:
-            print(f"E: {stderr}")
+        if echo:
+            if stdout:
+                print(f"{stdout}")
+            if stderr:
+                print(f"E: {stderr}")
         if p.returncode and exit:
             sys.exit(p.returncode)
         return stdout, stderr
