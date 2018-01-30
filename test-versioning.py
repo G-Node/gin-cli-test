@@ -74,22 +74,16 @@ def test_versioning():
     head, curhashes = hashtree(r)
     hashes[head] = curhashes
 
-    # overwrite files (new versions)
-    r.runcommand("gin", "unlock", ".")
-    create_files(r)
-    out, err = r.runcommand("gin", "upload", ".")
-    head, curhashes = hashtree(r)
-    hashes[head] = curhashes
-
-    # one more version
-    r.runcommand("gin", "unlock", ".")
-    create_files(r)
-    out, err = r.runcommand("gin", "upload", ".")
-    head, curhashes = hashtree(r)
-    hashes[head] = curhashes
+    # update all files 10 times
+    for _ in range(10):
+        r.runcommand("gin", "unlock", ".")
+        create_files(r)
+        out, err = r.runcommand("gin", "upload", ".")
+        head, curhashes = hashtree(r)
+        hashes[head] = curhashes
 
     # revert to second commit and check again
-    targetrevnum = 2
+    targetrevnum = 4
     curn = commitnum(r)
     selection = str(curn-targetrevnum)
 
