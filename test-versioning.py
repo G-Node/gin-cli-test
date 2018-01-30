@@ -68,6 +68,9 @@ def test_versioning():
     os.mkdir("smallfiles")
     os.mkdir("datafiles")
 
+    head, curhashes = hashtree(r)
+    hashes[head] = curhashes
+
     # add files and manually compute their md5 hashes
     create_files(r)
     out, err = r.runcommand("gin", "upload", ".")
@@ -82,19 +85,26 @@ def test_versioning():
         head, curhashes = hashtree(r)
         hashes[head] = curhashes
 
-    # revert to second commit and check again
-    targetrevnum = 4
-    curn = commitnum(r)
-    selection = str(curn-targetrevnum)
+    def checkout_and_compare(targetrevnum):
+        curn = commitnum(r)
+        selection = str(curn-targetrevnum)
 
-    r.runcommand("gin", "version", inp=selection)
-    # compute current hashes and compare with second entry in dict
-    # this assumes ordered dictionaries
-    head, curhashes = hashtree(r)
-    hashes[head] = curhashes
+        r.runcommand("gin", "version", "0", inp=selection)
+        # compute current hashes and compare with old entry in dict
+        # this assumes ordered dictionaries
+        head, curhashes = hashtree(r)
+        hashes[head] = curhashes
 
-    oldhash = revhash(r, targetrevnum)
-    assert hashes[head] == hashes[oldhash]
+        oldhash = revhash(r, targetrevnum)
+        # comparing only files that exist in oldhash, since our checkout
+        # doesn't remove files from git
+        for fname, fhash in hashes[oldhash].items():
+            assert fhash == curhashes[fname]
+
+    checkout_and_compare(4)
+    checkout_and_compare(8)
+    checkout_and_compare(2)
+    checkout_and_compare(0)
 
     r.runcommand("git", "log")
 
