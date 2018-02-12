@@ -15,6 +15,9 @@ before_install:
     - docker pull gnode/ginhome
     - ./start-server.sh
     - docker ps -a
+    - gin version
+    - gin git version
+    - gin annex version
     - while ! curl localhost:3000 -so /dev/null; do sleep 1; done
 
 script:
