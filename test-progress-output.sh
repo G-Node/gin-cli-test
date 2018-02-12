@@ -96,6 +96,12 @@ echo "<<<"
 # all files should be OK
 [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
 
+# delete a couple of files and check output message
+rm gitfile-4
+rm gitfile-1
+rm $fname1
+gin upload .
+
 # cleanup
 gin annex uninit || true
 popd
