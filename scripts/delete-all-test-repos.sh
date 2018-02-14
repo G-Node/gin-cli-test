@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+loc=$(cd $(dirname $0) && pwd)
+
 set -eu
-source ./setenv.sh
+source ${loc}/setenv.sh
 
 gin login $username <<< $password
 
