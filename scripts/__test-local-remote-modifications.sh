@@ -9,6 +9,9 @@
 #  7. Check that gin ls reports local changes correctly
 #  8.
 
+loc=$(cd $(dirname $0) && pwd)
+pushd $loc
+
 set -xeu
 source ./setenv.sh
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+loc=$(cd $(dirname $0) && pwd)
+pushd $loc
+
 set -xeu
 source ./setenv.sh
 

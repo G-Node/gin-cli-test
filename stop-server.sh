@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-set -xeu
-
 loc=$(cd $(dirname $0) && pwd)
+pushd $loc
+
+set -xeu
 
 docker exec gintestserver rm -rfv /data/ssh
 docker kill gintestserver

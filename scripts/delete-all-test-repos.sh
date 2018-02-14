@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 loc=$(cd $(dirname $0) && pwd)
+pushd $loc
 
 set -eu
-source ${loc}/setenv.sh
+source ./setenv.sh
 
 gin login $username <<< $password
 
@@ -28,6 +29,7 @@ do
     gin delete $reponame <<< $reponame
 done
 
+pushd ..
 repostore="./gin-data/gogs-repositories/$username/"
 if compgen -G "$repostore/gin-test-*" > /dev/null
 then

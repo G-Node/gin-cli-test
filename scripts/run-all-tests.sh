@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 loc=$(cd $(dirname $0) && pwd)
-cd $loc
+pushd $loc
 
 errorcount=0
 errored=()

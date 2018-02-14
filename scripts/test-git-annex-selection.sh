@@ -16,6 +16,9 @@
 #  14. Download the second file and check that both files have content and correct md5 hashes
 #  15. Delete the local copy of the repository
 
+loc=$(cd $(dirname $0) && pwd)
+pushd $loc
+
 set -xeu
 source ./setenv.sh
 
