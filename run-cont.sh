@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# Use this script to start the test runner container in the background and execute any command that is supplied as an argument.
+# The container is killed at the end of the run.
+# The script blindly passes whatever arguments are supplied to the container as a command, so proper command syntax and paths are required.
+
+cmd=$*
+
+set -xeu
+
+loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+pushd $loc
+
+docker build -t ginclitests ginclitests
+docker run --rm --network=ginbridge -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient -d ginclitests
+
+docker exec -w /home/ginuser gintestclient $cmd || true
+
+docker kill gintestclient
