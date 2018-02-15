@@ -99,7 +99,7 @@ def test_errors():
     # change remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
     name, address, *_ = out.split()
-    address = address.replace("2222", "1")
+    address = address.replace("22", "1")  # FIXME: port might not be in remote
     r.runcommand("git", "remote", "set-url", name, address)
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
@@ -109,7 +109,7 @@ def test_errors():
     assert errlines[-1].strip() == "5 operations failed"
 
     # revert remote change
-    address = address.replace("1", "2222")
+    address = address.replace("1", "22")
     r.runcommand("git", "remote", "set-url", name, address)
 
     # Change server address:port and test failures
