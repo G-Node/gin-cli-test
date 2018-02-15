@@ -7,4 +7,5 @@ USER ginuser
 
 ENV PATH /ginbin:$PATH
 
-ENTRYPOINT ["/scripts/run-all-tests.sh"]
+# Requires scripts directory to be mounted under ginuser home
+ENTRYPOINT ["/home/ginuser/scripts/run-all-tests.sh"]
