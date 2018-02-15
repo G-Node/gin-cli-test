@@ -2,7 +2,7 @@
 
 set -xeu
 
-loc=$(cd $(dirname $0) && pwd)
+loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
 docker build -t ginclitests ginclitests

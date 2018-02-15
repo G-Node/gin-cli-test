@@ -3,7 +3,7 @@
 # Upload and download larger files and observe output.
 # This isn't really a test and requires human eyeballs.
 
-loc=$(cd $(dirname $0) && pwd)
+loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
 set -xeu

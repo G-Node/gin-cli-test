@@ -9,7 +9,7 @@
 #  7. Check that gin ls reports local changes correctly
 #  8.
 
-loc=$(cd $(dirname $0) && pwd)
+loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
 set -xeu
