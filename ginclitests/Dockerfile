@@ -1,7 +1,10 @@
 FROM base/archlinux
 
 RUN pacman -Syu --noconfirm openssh git-annex python-pytest python-yaml
-RUN useradd -ms /bin/bash ginuser
+
+ARG UID=1000
+
+RUN useradd -m -u $UID -s /bin/bash ginuser
 
 USER ginuser
 
