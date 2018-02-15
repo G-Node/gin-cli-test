@@ -5,7 +5,7 @@ pushd $loc
 
 set -xeu
 
-docker exec gintestserver rm -rfv /data/ssh
+docker exec gintestserver rm -rfv /data/ssh /data/gogs-repositories
 docker kill gintestserver
 docker network rm ginbridge
 
