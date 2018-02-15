@@ -16,3 +16,5 @@ gin-data
 
 # caches
 *cache*
+
+bin/
