@@ -1,6 +1,6 @@
 FROM base/archlinux
 
-RUN pacman -Syu --noconfirm openssh git-annex python-pytest python-yaml
+RUN pacman -Syu --noconfirm openssh git-annex python-pytest python-yaml gist
 
 ARG UID=1000
 
