@@ -11,4 +11,4 @@ source ./scripts/setenv.sh
 testlog=${GIN_LOG_DIR}/tests.log
 echo "Running tests and logging to ${testlog}"
 echo $(pwd)
-docker run --rm --network=ginbridge -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --name gintestclient ginclitests &> ${testlog}
+docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --name gintestclient ginclitests &> ${testlog}
