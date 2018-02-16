@@ -14,6 +14,6 @@ pushd $loc
 docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
 docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient -d ginclitests
 
-docker exec -w /home/ginuser gintestclient $cmd || true
+docker exec --workidr="/home/ginuser" gintestclient $cmd || true
 
 docker kill gintestclient
