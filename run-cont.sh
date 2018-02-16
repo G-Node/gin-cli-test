@@ -11,7 +11,7 @@ set -xeu
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-docker build -t ginclitests ginclitests
+docker build --build-arg UID=${UID} dockerfiles/tester
 docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient -d ginclitests
 
 docker exec -w /home/ginuser gintestclient $cmd || true
