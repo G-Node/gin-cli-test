@@ -1,5 +1,5 @@
 # Set up user for running test scripts from https://github.com/G-Node/gin-cli-test
-FROM achkts/ginclitests
+FROM achkts/gin-cli-deps
 ARG UID=1000
 RUN useradd -m -u $UID -s /bin/bash ginuser
 USER ginuser

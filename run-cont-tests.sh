@@ -5,7 +5,7 @@ set -eu
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-docker build --build-arg UID=${UID} dockerfiles/tester
+docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
 
 source ./scripts/setenv.sh
 mkdir -p ${GIN_LOG_DIR}
