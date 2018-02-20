@@ -12,7 +12,7 @@ loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
 docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
-docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient -d ginclitests
+docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
 
 set +e
 docker exec gintestclient $cmd
