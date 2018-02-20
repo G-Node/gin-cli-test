@@ -96,7 +96,7 @@ def test_errors():
         assert line.strip().endswith("Content not available locally")
     assert errlines[-1].strip() == "5 operations failed"
 
-    # change remote address/port and test get-content failure
+    # change git repo remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
     name, address, *_ = out.split()
     address = address.replace("22", "1")  # FIXME: port might not be in remote
@@ -113,7 +113,7 @@ def test_errors():
     address = address.replace("1", "22")
     r.runcommand("git", "remote", "set-url", name, address)
 
-    # Change server address:port and test failures
+    # Change gin and git server address:port in config and test failures
     goodconfdir = r.env["GIN_CONFIG_DIR"]
     badconftemp = tempfile.TemporaryDirectory(prefix="badconf")
     badconfdir = os.path.join(badconftemp.name, "conf")
@@ -153,8 +153,56 @@ def test_errors():
     out, err = r.runcommand("gin", "download", exit=False)
     assert err, "Expected error, got nothing"
     errlines = err.splitlines()
-    # TODO: Should print auth error
-    assert errlines[-1].strip() == "1 operation failed"
+    assert len(errlines) == 1
+    assert errlines[0].strip() == "download failed: permission denied"
+
+    out, err = r.runcommand("gin", "upload", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    assert len(errlines) == 1
+    assert errlines[0].strip() == "1 operation failed"
+    outlines = out.splitlines()
+    assert len(outlines) == 1
+    assert outlines[0].strip() == "upload failed: permission denied"
+
+    # login to add key
+    r.login()
+
+    # set bad host key and check error
+    with open(os.path.join(goodconfdir, "ginhostkey"), "r+") as hostkeyfile:
+        goodhostkey = hostkeyfile.read()
+        badhostkey = goodhostkey.replace("AAA", "BBB")
+        hostkeyfile.seek(0)
+        hostkeyfile.write(badhostkey)
+
+    # TODO: Check error messages
+    out, err = r.runcommand("gin", "download", "--content", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    assert len(errlines) == 1
+    assert errlines[0].strip() ==\
+        "download failed: server key does not match known host key"
+
+    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    for line in errlines[:-1]:
+        # TODO: Should print host key error
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "5 operations failed"
+
+    out, err = r.runcommand("gin", "upload", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    assert len(errlines) == 1
+    assert errlines[0].strip() == "1 operation failed"
+    outlines = out.splitlines()
+    assert len(outlines) == 1
+    assert outlines[0].strip() ==\
+        "upload failed: server key does not match known host key"
+
+    # login to fix key
+    r.login()
 
     # Creating repository that already exists
     r.cdrel("..")
