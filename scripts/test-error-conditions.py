@@ -104,6 +104,7 @@ def test_errors():
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
     for line in errlines[:-1]:
         assert line.strip().endswith("(content or server unavailable)")
     assert errlines[-1].strip() == "5 operations failed"
@@ -121,19 +122,6 @@ def test_errors():
     with open(os.path.join(goodconfdir, "config.yml")) as conffile:
         confdata = yaml.load(conffile.read())
 
-    # TODO: remove key from server and perform gin get-content and gin
-    # download
-
-    # ruin key
-    # with open(os.path.join(badconfdir, "testuser.key"), "w") as keyfile:
-    #     keyfile.truncate()
-
-    # out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
-    # assert err, "Expected error, got nothing"
-    # for line in errlines[:-1]:
-    #     assert line.strip().endswith("(content or server unavailable)")
-    # assert errlines[-1].strip() == "5 operations failed"
-
     confdata["gin"]["port"] = 1
     confdata["git"]["port"] = 1
     with open(os.path.join(badconfdir, "config.yml"), "w") as conffile:
@@ -147,6 +135,26 @@ def test_errors():
 
     # Recover good config
     r.env["GIN_CONFIG_DIR"] = goodconfdir
+
+    # delete all keys (there might be leftovers from aborted tests)
+    err = ""
+    while len(err) == 0:
+        out, err = r.runcommand("gin", "keys", "--delete", "1", exit=False)
+
+    # get content should fail now
+    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    for line in errlines[:-1]:
+        # TODO: Should print auth error
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "5 operations failed"
+
+    out, err = r.runcommand("gin", "download", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    # TODO: Should print auth error
+    assert errlines[-1].strip() == "1 operation failed"
 
     # Creating repository that already exists
     r.cdrel("..")
