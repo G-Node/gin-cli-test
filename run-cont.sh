@@ -16,7 +16,7 @@ docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
 docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
 
 set +e
-docker exec --env="GIN_CONFIG_DIR=/home/ginuser/scripts/conf" --env="GIN_LOG_DIR=/home/ginuser/scripts/log" gintestclient $cmd
+docker exec -i --env="GIN_CONFIG_DIR=/home/ginuser/scripts/conf" --env="GIN_LOG_DIR=/home/ginuser/scripts/log" gintestclient $cmd
 cmdstat=$?
 
 docker kill gintestclient
