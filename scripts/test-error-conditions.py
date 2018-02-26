@@ -93,38 +93,10 @@ def test_errors():
 
     # Unable to unlock without content
     out, err = r.runcommand("gin", "unlock", "datafiles", exit=False)
-    outlines = out.splitlines()
     errlines = err.splitlines()
-    nfailed = 0
-    for line in outlines:
-        if line.endswith("failed"):
-            nfailed += 1
-    assert nfailed == 5
-    assert len(errlines) == 3
-    assert errlines[0].strip() == "5 operations failed"
-    assert errlines[1].strip() == "Content not available locally"
-    assert errlines[2].strip() == "Use 'gin get-content' to download"
-
-    # Remove all keys from server and perform git commands
-    out, err = r.runcommand("gin", "keys")
-    while "You have no keys" not in out:
-        r.runcommand("gin", "keys", "--delete", "1")
-        out, err = r.runcommand("gin", "keys")
-
-    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
-    assert err, "Expected error, got nothing"
-    outlines = out.splitlines()
-    errlines = err.splitlines()
-    nfailed = 0
-    for line in outlines:
-        if line.endswith("failed"):
-            nfailed += 1
-    assert nfailed == 5
-    assert len(errlines) == 2
-    assert errlines[0].strip() == "5 operations failed"
-    assert errlines[1].strip() == "Authentication failed: try logging in again"
-
-    # TODO: More commands that require git
+    for line in errlines[:-1]:
+        assert line.strip().endswith("Content not available locally")
+    assert errlines[-1].strip() == "5 operations failed"
 
     # change git repo remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
@@ -134,16 +106,10 @@ def test_errors():
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
-    outlines = out.splitlines()
     errlines = err.splitlines()
-    nfailed = 0
-    for line in outlines:
-        if line.endswith("failed"):
-            nfailed += 1
-    assert nfailed == 5
-    assert len(errlines) == 2
-    assert errlines[0].strip() == "5 operations failed"
-    assert errlines[1].strip() == "Content or server unavailable"
+    for line in errlines[:-1]:
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "5 operations failed"
 
     # revert remote change
     address = address.replace("1", "22")
@@ -256,17 +222,14 @@ def test_errors():
     out, err = r.runcommand("gin", "create", anotherrepo, exit=False)
     assert ("Creating repository" in out
             and "OK" in out), f"Failed to create {anotherrepo} on server"
-    errlines = err.splitlines()
-    assert errlines[0] == "1 operation failed"
-    errmsg = (f"Repository download failed: '{anotherrepo}'"
-              " already exists in the current directory and is not empty")
-    assert errlines[-1] == errmsg
+    assert out.endswith(
+        f"Repository download failed. '{anotherrepo}' already exists in the "
+        "current directory and is not empty."
+    )
+    assert err == "1 operation failed"
 
     out, err = r.runcommand("gin", "repos")
     assert anotherrepo in out
-
-    # TODO: gin get <valid user>/<invalid repo>
-    # TODO: gin get <invalid user>/<whatever>
 
     r.cleanup(reponame)
     r.logout()
