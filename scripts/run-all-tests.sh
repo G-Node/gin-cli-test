@@ -3,7 +3,7 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-if ! command -v gin
+if ! which gin
 then
     echo "gin binary not found. Aborting"
     exit 1
