@@ -17,7 +17,6 @@ def test_errors():
 
     commands = [
         "upload",
-        "download",
         "lock",
         "unlock",
         "get-content",
@@ -34,6 +33,9 @@ def test_errors():
         out, err = r.runcommand("gin", cmd, "foobar", exit=False)
         assert err == norepoerr
 
+    out, err = r.runcommand("gin", "download", exit=False)
+    assert err == norepoerr
+
     # create repo (remote and local) and cd into directory
     reponame = f"gin-test-{randint(0, 9999):04}"
     # repopath = f"{username}/{reponame}"
@@ -41,11 +43,11 @@ def test_errors():
                  "Test repository for error output. Created with test scripts")
     r.cdrel(reponame)
 
-    # Unable to run any command on file that does not exist (download ignored)
+    # Unable to run any command on file that does not exist
     out, err = r.runcommand("gin", "upload", "foobar", exit=False)
     assert out == "No files matched foobar"
     assert err == "1 operation failed"
-    for cmd in commands[2:]:
+    for cmd in commands:
         out, err = r.runcommand("gin", cmd, "foobar", exit=False)
         assert out == "No files matched foobar"
         assert err == "1 operation failed"
@@ -63,7 +65,7 @@ def test_errors():
     r.cdrel("..")
 
     # No output on lock, unlock, getc, rmc on untracked file(s)
-    for cmd in commands[2:]:
+    for cmd in commands[1:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
         assert not out
         assert not err
@@ -81,7 +83,7 @@ def test_errors():
     assert not err
 
     # No output on lock, unlock, getc, rmc on non-annexed file(s)
-    for cmd in commands[2:]:
+    for cmd in commands[1:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
         assert not out
         assert not err
