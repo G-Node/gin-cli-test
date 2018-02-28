@@ -89,7 +89,7 @@ def test_versioning():
         curn = commitnum(r)
         selection = str(curn-targetrevnum)
 
-        r.runcommand("gin", "version", "0", inp=selection)
+        r.runcommand("gin", "version", "--max-count", "0", inp=selection)
         # compute current hashes and compare with old entry in dict
         # this assumes ordered dictionaries
         head, curhashes = hashtree(r)
