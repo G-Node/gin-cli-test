@@ -72,9 +72,10 @@ def create_files(r):
 
 
 def test_versioning():
+    global GLOBALCOMMITCOUNT
     hashes = dict()
-    r = Runner()
 
+    r = Runner()
     r.login()
     # username = r.username
 
@@ -95,6 +96,7 @@ def test_versioning():
     out, err = r.runcommand("gin", "upload", ".", echo=False)
     head, curhashes = hashtree(r)
     hashes[head] = curhashes
+    GLOBALCOMMITCOUNT = 2
 
     # update all files 10 times
     print("Creating files")
@@ -104,7 +106,6 @@ def test_versioning():
         out, err = r.runcommand("gin", "upload", ".", echo=False)
         head, curhashes = hashtree(r)
         hashes[head] = curhashes
-        global GLOBALCOMMITCOUNT
         GLOBALCOMMITCOUNT += 1
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
@@ -206,6 +207,32 @@ def test_versioning():
                          dirnames=["smallfiles"])
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
+
+    # checkout some old file versions alongside current one
+    def get_old_file(selection, filename):
+        coname = f"{filename}-old"
+        curtotalrev = getrevcount(r)
+        oldrevhash = revhash(r, selection, [filename])
+        cmdargs = ["gin", "version", "--max-count", "0",
+                   "--save-to", coname, filename]
+        print(f"Running gin version command: {cmdargs} with input {selection}")
+        r.runcommand(*cmdargs, inp=str(selection), echo=False)
+        # no new commits
+        newn = getrevcount(r)
+        assert newn == curtotalrev, "New commit was created when it shouldn't"
+        # hash checked out file
+        cohash = md5sum(coname)
+        assert cohash == hashes[oldrevhash][filename],\
+            "Checked out file hash verification failed"
+
+    get_old_file(10, "datafiles/datafile-003")
+    get_old_file(7, "datafiles/datafile-001")
+    get_old_file(15, "smallfiles/smallfile-002")
+
+    out, err = r.runcommand("gin", "version", "--save-to", "foo", "datafiles",
+                            exit=False)
+    # should error
+    assert err, "Expected error. Got nothing."
 
     r.cleanup(reponame)
     r.logout()
