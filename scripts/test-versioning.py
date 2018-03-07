@@ -5,6 +5,9 @@ from runner import Runner
 from hashlib import md5
 
 
+GLOBALCOMMITCOUNT = 0
+
+
 def md5sum(filename, printhash=False):
     with open(filename, "rb") as thefile:
         fdata = thefile.read()
@@ -101,8 +104,10 @@ def test_versioning():
         out, err = r.runcommand("gin", "upload", ".", echo=False)
         head, curhashes = hashtree(r)
         hashes[head] = curhashes
+        global GLOBALCOMMITCOUNT
+        GLOBALCOMMITCOUNT += 1
 
-    assert getrevcount(r) == 12
+    assert getrevcount(r) == GLOBALCOMMITCOUNT
 
     def checkout_and_compare(selection, fnames=None, dirnames=None):
         paths = list()
@@ -124,6 +129,9 @@ def test_versioning():
 
         out, err = r.runcommand(*cmdargs, echo=False)
         expecting_changes = bool(out)
+        if expecting_changes:
+            global GLOBALCOMMITCOUNT
+            GLOBALCOMMITCOUNT += 1
 
         curtotalrev = getrevcount(r)
 
@@ -197,7 +205,7 @@ def test_versioning():
     checkout_and_compare(6, fnames=[datafiles[0], datafiles[5], datafiles[2]],
                          dirnames=["smallfiles"])
 
-    assert getrevcount(r) == 24
+    assert getrevcount(r) == GLOBALCOMMITCOUNT
 
     r.cleanup(reponame)
     r.logout()
