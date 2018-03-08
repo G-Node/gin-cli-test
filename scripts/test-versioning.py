@@ -110,7 +110,8 @@ def test_versioning():
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
-    def checkout_and_compare(selection, fnames=None, dirnames=None):
+    def checkout_and_compare(selection=None, revision=None,
+                             fnames=None, dirnames=None):
         paths = list()
         if fnames:
             paths.extend(fnames)
@@ -119,8 +120,12 @@ def test_versioning():
 
         # the hash of the pre-checkout revision (current HEAD)
         precorevhash = revhash(r, 1)
-        # the hash of the commit we're going to checkout from
-        oldrevhash = revhash(r, selection, paths)
+
+        if revision is None:
+            # the hash of the commit we're going to checkout from
+            oldrevhash = revhash(r, selection, paths)
+        else:
+            oldrevhash, _ = r.runcommand("git", "rev-parse", revision)
 
         # check if checkout should change any files
         cmdargs = ["git", "diff", oldrevhash]
@@ -136,12 +141,18 @@ def test_versioning():
 
         curtotalrev = getrevcount(r)
 
-        cmdargs = ["gin", "version", "--max-count", "0"]
+        if revision is None:
+            cmdargs = ["gin", "version", "--max-count", "0"]
+            inp = str(selection)
+        else:
+            cmdargs = ["gin", "version", "--id", revision]
+            inp = None
+
         if paths:
             cmdargs.extend(paths)
 
-        print(f"Running gin version command: {cmdargs} with input {selection}")
-        r.runcommand(*cmdargs, inp=str(selection), echo=False)
+        print(f"Running gin version command: {cmdargs} with input {inp}")
+        r.runcommand(*cmdargs, inp=inp, echo=False)
         # should have a new commit now
         newn = getrevcount(r)
         assert expecting_changes == (newn == curtotalrev + 1),\
@@ -208,6 +219,16 @@ def test_versioning():
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
+    revhashes = list(hashes.keys())
+
+    checkout_and_compare(revision=revhashes[8])
+    checkout_and_compare(revision=revhashes[4], fnames=repofiles[3:])
+    checkout_and_compare(revision=revhashes[10], fnames=repofiles[-1:])
+    checkout_and_compare(revision="HEAD~3", fnames=repofiles[2:3])
+    checkout_and_compare(revision="master~10", dirnames=["smallfiles"])
+
+    assert getrevcount(r) == GLOBALCOMMITCOUNT
+
     # checkout some old file versions alongside current one
     def get_old_file(selection, filename):
         coname = f"{filename}-old"
@@ -225,14 +246,15 @@ def test_versioning():
         assert cohash == hashes[oldrevhash][filename],\
             "Checked out file hash verification failed"
 
-    get_old_file(10, "datafiles/datafile-003")
-    get_old_file(7, "datafiles/datafile-001")
-    get_old_file(15, "smallfiles/smallfile-002")
+    # NOT IMPLEMENTED YET
+    # get_old_file(10, "datafiles/datafile-003")
+    # get_old_file(7, "datafiles/datafile-001")
+    # get_old_file(15, "smallfiles/smallfile-002")
 
-    out, err = r.runcommand("gin", "version", "--save-to", "foo", "datafiles",
-                            exit=False)
-    # should error
-    assert err, "Expected error. Got nothing."
+    # out, err = r.runcommand("gin", "version", "--save-to", "foo", "datafiles",
+    #                         exit=False)
+    # # should error
+    # assert err, "Expected error. Got nothing."
 
     r.cleanup(reponame)
     r.logout()
