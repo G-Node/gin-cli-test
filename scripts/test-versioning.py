@@ -4,6 +4,8 @@ from random import randint
 from runner import Runner
 from hashlib import md5
 
+import pytest
+
 
 GLOBALCOMMITCOUNT = 0
 
@@ -71,44 +73,13 @@ def create_files(r):
     return fnames
 
 
-def test_versioning():
+def test_repo_versioning(runner, hashes):
     global GLOBALCOMMITCOUNT
-    hashes = dict()
-
-    r = Runner()
-    r.login()
-    # username = r.username
-
-    # create repo (remote and local) and cd into directory
-    reponame = f"gin-test-{randint(0, 9999):04}"
-    # repopath = f"{username}/{reponame}"
-    print("Setting up test repository")
-    r.runcommand("gin", "create", reponame,
-                 "Test repository for versioning. Created with test scripts",
-                 echo=False)
-    r.cdrel(reponame)
-
-    head, curhashes = hashtree(r)
-    hashes[head] = curhashes
-
-    # add files and manually compute their md5 hashes
-    repofiles = create_files(r)
-    out, err = r.runcommand("gin", "upload", ".", echo=False)
-    head, curhashes = hashtree(r)
-    hashes[head] = curhashes
-    GLOBALCOMMITCOUNT = 2
-
-    # update all files 10 times
-    print("Creating files")
-    for _ in range(10):
-        r.runcommand("gin", "unlock", ".", echo=False)
-        create_files(r)
-        out, err = r.runcommand("gin", "upload", ".", echo=False)
-        head, curhashes = hashtree(r)
-        hashes[head] = curhashes
-        GLOBALCOMMITCOUNT += 1
-
+    r = runner
     assert getrevcount(r) == GLOBALCOMMITCOUNT
+
+    head = revhash(r, 1)
+    repofiles = list(hashes[head].keys())
 
     def checkout_and_compare(selection=None, revision=None,
                              fnames=None, dirnames=None):
@@ -135,8 +106,8 @@ def test_versioning():
 
         out, err = r.runcommand(*cmdargs, echo=False)
         expecting_changes = bool(out)
+        global GLOBALCOMMITCOUNT
         if expecting_changes:
-            global GLOBALCOMMITCOUNT
             GLOBALCOMMITCOUNT += 1
 
         curtotalrev = getrevcount(r)
@@ -214,8 +185,8 @@ def test_versioning():
     checkout_and_compare(3, dirnames=["datafiles"])
     checkout_and_compare(3, dirnames=["smallfiles"])
     checkout_and_compare(6, fnames=datafiles, dirnames=["smallfiles"])
-    checkout_and_compare(6, fnames=[datafiles[0], datafiles[5], datafiles[2]],
-                         dirnames=["smallfiles"])
+    checkout_and_compare(6, fnames=[datafiles[0], datafiles[5],
+                                    datafiles[2]], dirnames=["smallfiles"])
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
@@ -226,6 +197,12 @@ def test_versioning():
     checkout_and_compare(revision=revhashes[10], fnames=repofiles[-1:])
     checkout_and_compare(revision="HEAD~3", fnames=repofiles[2:3])
     checkout_and_compare(revision="master~10", dirnames=["smallfiles"])
+
+    assert getrevcount(r) == GLOBALCOMMITCOUNT
+
+
+def test_version_copyto(runner, hashes):
+    r = runner
 
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
@@ -240,27 +217,68 @@ def test_versioning():
         r.runcommand(*cmdargs, inp=str(selection), echo=False)
         # no new commits
         newn = getrevcount(r)
-        assert newn == curtotalrev, "New commit was created when it shouldn't"
+        assert newn == curtotalrev,\
+            "New commit was created when it shouldn't"
         # hash checked out file
         cohash = md5sum(coname)
         assert cohash == hashes[oldrevhash][filename],\
             "Checked out file hash verification failed"
 
-    # NOT IMPLEMENTED YET
-    # get_old_file(10, "datafiles/datafile-003")
-    # get_old_file(7, "datafiles/datafile-001")
-    # get_old_file(15, "smallfiles/smallfile-002")
+    get_old_file(2, "datafiles/datafile-003")
+    get_old_file(7, "datafiles/datafile-001")
+    get_old_file(3, "smallfiles/smallfile-002")
 
-    # out, err = r.runcommand("gin", "version", "--save-to", "foo", "datafiles",
-    #                         exit=False)
-    # # should error
-    # assert err, "Expected error. Got nothing."
+    out, err = r.runcommand("gin", "version", "--save-to", "foo",
+                            "datafiles", exit=False)
+    # should error
+    assert err, "Expected error. Got nothing."
 
+
+@pytest.fixture(scope="module")
+def runner():
+    r = Runner()
+    r.login()
+    # create repo (remote and local) and cd into directory
+    reponame = f"gin-test-{randint(0, 9999):04}"
+    # repopath = f"{username}/{reponame}"
+    print("Setting up test repository")
+    r.runcommand("gin", "create", reponame,
+                 "Test repository for versioning",
+                 echo=False)
+    r.cdrel(reponame)
+
+    yield r
     r.cleanup(reponame)
     r.logout()
 
     print("DONE!")
 
 
-if __name__ == "__main__":
-    test_versioning()
+@pytest.fixture(scope="module")
+def hashes(runner):
+    global GLOBALCOMMITCOUNT
+    r = runner
+    GLOBALCOMMITCOUNT = 0
+    hashes = dict()
+
+    head, curhashes = hashtree(r)
+    hashes[head] = curhashes
+
+    # add files and compute their md5 hashes
+    create_files(r)
+    out, err = r.runcommand("gin", "upload", ".", echo=False)
+    head, curhashes = hashtree(r)
+    hashes[head] = curhashes
+    GLOBALCOMMITCOUNT = 2
+
+    # update all files 10 times
+    print("Creating files")
+    for _ in range(10):
+        r.runcommand("gin", "unlock", ".", echo=False)
+        create_files(r)
+        out, err = r.runcommand("gin", "upload", ".", echo=False)
+        head, curhashes = hashtree(r)
+        hashes[head] = curhashes
+        GLOBALCOMMITCOUNT += 1
+
+    return hashes
