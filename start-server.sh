@@ -5,6 +5,10 @@ pushd $loc
 
 set -xeu
 
+# clean up old stuff from potentially improper server shutdown
+docker network rm ginbridge || true
+rm -fr "${loc}/gin-data" || true
+
 docker pull gnode/ginhome
 
 # copy init server data to live location
