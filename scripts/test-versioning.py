@@ -201,6 +201,7 @@ def test_repo_versioning(runner, hashes):
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
 
+@pytest.mark.skip(reason="--copy-to not implemented yet")
 def test_version_copyto(runner, hashes):
     r = runner
 
