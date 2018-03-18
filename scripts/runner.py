@@ -28,6 +28,9 @@ class Runner(object):
         p = sp.run(args, env=self.env, stdout=sp.PIPE, stderr=sp.PIPE,
                    cwd=self.cmdloc, input=inp, encoding="utf-8")
         stdout, stderr = p.stdout.strip(), p.stderr.strip()
+        # if exiting, force enable echo
+        if p.returncode and exit:
+            echo = True
         if stdout:
             doecho(f"{stdout}")
         if stderr:
