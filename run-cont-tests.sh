@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
