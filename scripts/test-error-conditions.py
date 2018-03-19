@@ -223,7 +223,7 @@ def test_errors():
     assert ("Creating repository" in out
             and "OK" in out), f"Failed to create {anotherrepo} on server"
     assert out.endswith(
-        f"Repository download failed. '{anotherrepo}' already exists in the "
+        f"Repository download failed.\n'{anotherrepo}' already exists in the "
         "current directory and is not empty."
     )
     assert err == "1 operation failed"
