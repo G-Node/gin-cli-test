@@ -3,6 +3,7 @@ import util
 from random import randint
 from runner import Runner
 from hashlib import md5
+from glob import glob
 
 import pytest
 
@@ -208,18 +209,22 @@ def test_version_copyto(runner, hashes):
 
     # checkout some old file versions alongside current one
     def get_old_file(selection, filename):
-        coname = f"{filename}-old"
         curtotalrev = getrevcount(r)
         oldrevhash = revhash(r, selection, [filename])
         cmdargs = ["gin", "version", "--max-count", "0",
-                   "--save-to", coname, filename]
+                   "--copy-to", "oldfiles", filename]
         print(f"Running gin version command: {cmdargs} with input {selection}")
-        r.runcommand(*cmdargs, inp=str(selection), echo=False)
+        r.runcommand(*cmdargs, inp=str(selection), echo=True)
         # no new commits
         newn = getrevcount(r)
         assert newn == curtotalrev,\
             "New commit was created when it shouldn't"
-        # hash checked out file
+        # get old content
+        coname = os.path.join("oldfiles", glob(f"{filename}*"))
+        # get content if it's an annex file, otherwise ignore error
+        r.runcommand("gin", "get-content", *coname, exit=False)
+        # hash checked out file(s)
+
         cohash = md5sum(coname)
         assert cohash == hashes[oldrevhash][filename],\
             "Checked out file hash verification failed"
@@ -227,11 +232,6 @@ def test_version_copyto(runner, hashes):
     get_old_file(2, "datafiles/datafile-003")
     get_old_file(7, "datafiles/datafile-001")
     get_old_file(3, "smallfiles/smallfile-002")
-
-    out, err = r.runcommand("gin", "version", "--save-to", "foo",
-                            "datafiles", exit=False)
-    # should error
-    assert err, "Expected error. Got nothing."
 
 
 @pytest.fixture(scope="module")
