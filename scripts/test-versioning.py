@@ -3,12 +3,19 @@ import util
 from random import randint
 from runner import Runner
 from hashlib import md5
-from glob import glob
 
 import pytest
 
 
 GLOBALCOMMITCOUNT = 0
+
+
+def lsfiles(path):
+    files = []
+    for root, dirs, fnames in os.walk(path):
+        files.extend([os.path.join(root, f)
+                      for f in fnames])
+    return files
 
 
 def md5sum(filename, printhash=False):
@@ -208,30 +215,34 @@ def test_version_copyto(runner, hashes):
     assert getrevcount(r) == GLOBALCOMMITCOUNT
 
     # checkout some old file versions alongside current one
-    def get_old_file(selection, filename):
+    def get_old_files(selection, paths, dest):
         curtotalrev = getrevcount(r)
-        oldrevhash = revhash(r, selection, [filename])
+        oldrevhash = revhash(r, selection, paths)
         cmdargs = ["gin", "version", "--max-count", "0",
-                   "--copy-to", "oldfiles", filename]
+                   "--copy-to", dest, *paths]
         print(f"Running gin version command: {cmdargs} with input {selection}")
         r.runcommand(*cmdargs, inp=str(selection), echo=True)
         # no new commits
         newn = getrevcount(r)
         assert newn == curtotalrev,\
             "New commit was created when it shouldn't"
-        # get old content
-        coname = os.path.join("oldfiles", glob(f"{filename}*"))
-        # get content if it's an annex file, otherwise ignore error
-        r.runcommand("gin", "get-content", *coname, exit=False)
+
+        # get content for the checked out files
+        r.runcommand("gin", "get-content", dest, exit=False)
         # hash checked out file(s)
+        # assumes all files in dest are from oldrevhash
+        for fn in lsfiles(dest):
+            cohash = md5sum(fn)
+            origname = fn[len(dest)+1:-16]
+            print(f"{fn} becomes {origname}")
+            assert cohash == hashes[oldrevhash][origname],\
+                "Checked out file hash verification failed"
 
-        cohash = md5sum(coname)
-        assert cohash == hashes[oldrevhash][filename],\
-            "Checked out file hash verification failed"
-
-    get_old_file(2, "datafiles/datafile-003")
-    get_old_file(7, "datafiles/datafile-001")
-    get_old_file(3, "smallfiles/smallfile-002")
+    get_old_files(2, ["datafiles/datafile-003"], "oldstuff")
+    get_old_files(7, ["datafiles/datafile-001"], "anotherolddir")
+    get_old_files(3, ["smallfiles/smallfile-002"], "checkouts")
+    get_old_files(5, ["smallfiles", "datafiles"], "everything")
+    get_old_files(4, ["datafiles"], "olddatafiles")
 
 
 @pytest.fixture(scope="module")
