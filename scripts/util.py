@@ -13,3 +13,12 @@ def mkrandfile(name, size=100):
     """
     with open(name, "wb") as f:
         f.write(os.urandom(size*1024))
+
+
+def getrevcount(r):
+    """
+    Total number of revisions from HEAD.
+    """
+    n, _ = r.runcommand("git", "rev-list", "--count", "HEAD",
+                               echo=False)
+    return int(n)

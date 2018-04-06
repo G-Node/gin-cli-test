@@ -39,7 +39,13 @@ class Runner(object):
             sys.exit(p.returncode)
         return stdout, stderr
 
-    def cdrel(self, path):
+    def cdrel(self, path="."):
+        """
+        Changes the working directory for the runner as well as the caller.
+
+        With default argument '.', sets the working directory of the caller to
+        the existing wd of the runner.
+        """
         self.cmdloc = os.path.abspath(os.path.join(self.cmdloc, path))
         os.chdir(self.cmdloc)
         print(f"New dir: {self.cmdloc}")
