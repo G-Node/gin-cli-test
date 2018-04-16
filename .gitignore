@@ -11,9 +11,6 @@ token
 # macOS junk
 .DS_Store
 
-# "Live" server data
-gin-data
-
 # caches
 *cache*
 
