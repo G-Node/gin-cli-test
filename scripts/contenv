@@ -1,0 +1,4 @@
+GIN_CONFIG_DIR=/home/ginuser/scripts/conf
+GIN_LOG_DIR=/home/ginuser/scripts/log
+username=testuser
+password="a test password 42"
