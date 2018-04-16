@@ -109,11 +109,7 @@ def test_repo_versioning(runner, hashes):
         if expecting_changes:
             GLOBALCOMMITCOUNT += 1
 
-<<<<<<< HEAD
-        curtotalrev = getrevcount(r)
-=======
         curtotalrev = util.getrevcount(r)
->>>>>>> test-merge-conflicts
 
         if revision is None:
             cmdargs = ["gin", "version", "--max-count", "0"]
@@ -128,11 +124,7 @@ def test_repo_versioning(runner, hashes):
         print(f"Running gin version command: {cmdargs} with input {inp}")
         r.runcommand(*cmdargs, inp=inp, echo=False)
         # should have a new commit now
-<<<<<<< HEAD
-        newn = getrevcount(r)
-=======
         newn = util.getrevcount(r)
->>>>>>> test-merge-conflicts
         assert expecting_changes == (newn == curtotalrev + 1),\
             "Version command did not create a new commit"
         # compute current hashes and compare with old entry in dict
@@ -195,11 +187,7 @@ def test_repo_versioning(runner, hashes):
     checkout_and_compare(6, fnames=[datafiles[0], datafiles[5],
                                     datafiles[2]], dirnames=["smallfiles"])
 
-<<<<<<< HEAD
-    assert getrevcount(r) == GLOBALCOMMITCOUNT
-=======
     assert util.getrevcount(r) == GLOBALCOMMITCOUNT
->>>>>>> test-merge-conflicts
 
     revhashes = list(hashes.keys())
 
@@ -209,40 +197,24 @@ def test_repo_versioning(runner, hashes):
     checkout_and_compare(revision="HEAD~3", fnames=repofiles[2:3])
     checkout_and_compare(revision="master~10", dirnames=["smallfiles"])
 
-<<<<<<< HEAD
-    assert getrevcount(r) == GLOBALCOMMITCOUNT
-=======
     assert util.getrevcount(r) == GLOBALCOMMITCOUNT
->>>>>>> test-merge-conflicts
 
 
 def test_version_copyto(runner, hashes):
     r = runner
 
-<<<<<<< HEAD
-    assert getrevcount(r) == GLOBALCOMMITCOUNT
-
-    # checkout some old file versions alongside current one
-    def get_old_files(selection, paths, dest):
-        curtotalrev = getrevcount(r)
-=======
     assert util.getrevcount(r) == GLOBALCOMMITCOUNT
 
     # checkout some old file versions alongside current one
     def get_old_files(selection, paths, dest):
         curtotalrev = util.getrevcount(r)
->>>>>>> test-merge-conflicts
         oldrevhash = revhash(r, selection, paths)
         cmdargs = ["gin", "version", "--max-count", "0",
                    "--copy-to", dest, *paths]
         print(f"Running gin version command: {cmdargs} with input {selection}")
         r.runcommand(*cmdargs, inp=str(selection), echo=True)
         # no new commits
-<<<<<<< HEAD
-        newn = getrevcount(r)
-=======
         newn = util.getrevcount(r)
->>>>>>> test-merge-conflicts
         assert newn == curtotalrev,\
             "New commit was created when it shouldn't"
 
