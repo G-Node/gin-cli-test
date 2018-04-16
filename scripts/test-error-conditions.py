@@ -164,8 +164,7 @@ def test_errors():
     assert len(errlines) == 1
     assert errlines[0].strip() == "1 operation failed"
     outlines = out.splitlines()
-    assert len(outlines) == 1
-    assert outlines[0].strip() == "upload failed: permission denied"
+    assert outlines[-1].strip() == "upload failed: permission denied"
 
     # login to add key
     r.login()
@@ -199,8 +198,7 @@ def test_errors():
     assert len(errlines) == 1
     assert errlines[0].strip() == "1 operation failed"
     outlines = out.splitlines()
-    assert len(outlines) == 1
-    assert outlines[0].strip() ==\
+    assert outlines[-1].strip() ==\
         "upload failed: server key does not match known host key"
 
     # login to fix key
