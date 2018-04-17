@@ -19,6 +19,8 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
+echo "****** Running ${BASH_SOURCE[0]} ******"
+
 set -xeu
 source ./setenv.sh
 
