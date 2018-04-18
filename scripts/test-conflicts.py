@@ -38,17 +38,16 @@ def test_download_over_modified():
             util.mkrandfile(f"subfile-{jdx}.annex", 200)
         loca.cdrel("..")
 
-    # upload should fail: locb clone pushed an init
-    out, err = loca.runcommand("gin", "upload", ".", exit=False)
-    assert err, "Expected error, got nothing"
-    expmsg = ("upload failed: changes were made on the server that have not "
-              "been downloaded; run 'gin download' to update local copies")
-    assert out.endswith(expmsg)
+    # upload should do nothing
+    out, err = loca.runcommand("gin", "upload", ".")
 
     loca.runcommand("gin", "download")
     loca.runcommand("gin", "upload", ".")
 
     locb.runcommand("gin", "download")
+
+    expmsg = ("upload failed: changes were made on the server that have not "
+              "been downloaded; run 'gin download' to update local copies")
 
     # A PUSH, B PUSH BEFORE PULL
     loca.cdrel()
