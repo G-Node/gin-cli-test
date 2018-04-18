@@ -32,6 +32,9 @@ done
 
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 21 ]
 
+gin commit .
+[ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
+
 gin upload .
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 21 ]
 

@@ -25,19 +25,18 @@ for idx in {0..50}
 do
     fname=root-$idx.git
     mkgitfile $fname
-    gin git add $fname
 done
 for idx in {70..90}
 do
     fname=root-$idx.annex
     mkannexfile $fname
-    gin annex add $fname
 done
 
+gin commit root*
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
-gin git commit -m "adding stuff"
-[ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
+# gin git commit -m "adding stuff"
+# [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
 gin upload  # since we manually did the commit, the upload should sync everything
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
