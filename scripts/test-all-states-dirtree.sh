@@ -123,6 +123,36 @@ gin remove-content subdir-a
 # NC files are broken symlinks
 [ $(find -L . -type l   | wc -l) -eq 12 ]
 
+# push everything and then rmc it
+gin upload .
+gin rmc .
+
+# annex files are now NC
+[ $(gin ls --short | grep -F "NC" | wc -l) -eq 81 ]
+
+# git files are still OK
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 11 ]
+
+
+# remove a few files and check their status
+rm -v files-for-git/subfile-1.git
+rm -rv subdir-b
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 11 ]
+
+gin commit .
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 0 ]
+
+# add new files, remove some existing ones, check status and upload
+mkannexfile "new-annex-file"
+mkgitfile "new-git-file"
+rm -r subdir-a
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 10 ]
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 2 ]
+
+gin upload .
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 0 ]
+
 # cleanup
 gin annex uninit || true
 popd
