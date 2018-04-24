@@ -17,7 +17,7 @@ gin login $username <<< $password
 # create repo (remote and local) and cd into directory
 reponame=gin-test-${RANDOM}
 repopath=${username}/${reponame}
-gin create $reponame "Test repository --- Created with test scripts"
+gin create $reponame "Test repository --- all states"
 pushd $reponame
 
 # create files in root
@@ -32,11 +32,10 @@ do
     mkannexfile $fname
 done
 
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 72 ]
+
 gin commit root*
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
-
-# gin git commit -m "adding stuff"
-# [ $(gin ls --short | grep -F "LC" | wc -l) -eq 72 ]
 
 gin upload  # since we manually did the commit, the upload should sync everything
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
@@ -50,6 +49,28 @@ do
     fname=root-file-$idx.untracked
     echo "I am a root file. I will not be added to git or annex" > $fname
 done
+
+# modify all tracked files
+gin unlock .
+for idx in {0..50}
+do
+    fname=root-$idx.git
+    mkgitfile $fname
+done
+for idx in {70..90}
+do
+    fname=root-$idx.annex
+    mkannexfile $fname
+done
+gin lock .
+
+[ $(gin ls --short | grep -F "MD" | wc -l) -eq 51 ]
+[ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
+
+gin upload *.annex *.git  # upload all except .untracked
+
+# should have 3 commits so far
+[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
 
 # Create some subdirectories with files
 for idx in {a..f}
@@ -70,7 +91,7 @@ gin upload subdir-a subdir-b/subfile-5.annex subdir-b/subfile-10.annex
 
 # should only have 12 new synced files
 [ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
-# there should be 56 untracked files total
+# there should be 54 untracked files total
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 54 ]
 # can also check each directory individually
 [ $(gin ls --short subdir-b | grep -F "??" | wc -l) -eq 8 ]
@@ -130,14 +151,15 @@ gin rmc .
 # annex files are now NC
 [ $(gin ls --short | grep -F "NC" | wc -l) -eq 81 ]
 
-# git files are still OK
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 11 ]
+# git files are still OK (untracked were added too)
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 57 ]
 
 
 # remove a few files and check their status
-rm -v files-for-git/subfile-1.git
+rm -v subdir-a/subfile-1.annex
+rm -v root-10.git
 rm -rv subdir-b
-[ $(gin ls --short | grep -F "RM" | wc -l) -eq 11 ]
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 12 ]
 
 gin commit .
 [ $(gin ls --short | grep -F "RM" | wc -l) -eq 0 ]
@@ -145,7 +167,7 @@ gin commit .
 # add new files, remove some existing ones, check status and upload
 mkannexfile "new-annex-file"
 mkgitfile "new-git-file"
-rm -r subdir-a
+rm -r subdir-c
 [ $(gin ls --short | grep -F "RM" | wc -l) -eq 10 ]
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 2 ]
 

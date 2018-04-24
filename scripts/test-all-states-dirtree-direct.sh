@@ -17,40 +17,37 @@ gin login $username <<< $password
 # create repo (remote and local) and cd into directory
 reponame=gin-test-${RANDOM}
 repopath=${username}/${reponame}
-gin create $reponame "Test repository --- Created with test scripts"
+gin create $reponame "Test repository --- all states direct mode"
 pushd $reponame
 
 echo "************ SWITCHING TO DIRECT MODE ************"
 gin annex direct
 
-# create files in root to be annexed
+# create files in root
+for idx in {0..50}
+do
+    fname=root-$idx.git
+    mkgitfile $fname
+done
 for idx in {70..90}
 do
     fname=root-$idx.annex
     mkannexfile $fname
 done
 
-[ $(gin ls --short | grep -F "??" | wc -l) -eq 21 ]
+[ $(gin ls --short | grep -F "??" | wc -l) -eq 72 ]
 
-gin commit .
+gin commit root*
 [ $(gin ls --short | grep -F "LC" | wc -l) -eq 21 ]
 
-gin upload .
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 21 ]
+# git files in direct mode can't be in LC state
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 51 ]
 
-# modify them
-for idx in {70..90}
-do
-    fname=root-$idx.annex
-    mkannexfile $fname
-done
+gin upload  # since we manually did the commit, the upload should sync everything
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
 
-[ $(gin ls --short | grep -F "MD" | wc -l) -eq 21 ]
-
-gin upload .
-
-# should have 3 commits so far
-[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
+# gin upload command should not have created an extra commit
+[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 2 ]
 
 # Create more root files that will remain UNTRACKED
 for idx in {a..f}
@@ -58,6 +55,26 @@ do
     fname=root-file-$idx.untracked
     echo "I am a root file. I will not be added to git or annex" > $fname
 done
+
+# modify all tracked files
+for idx in {0..50}
+do
+    fname=root-$idx.git
+    mkgitfile $fname
+done
+for idx in {70..90}
+do
+    fname=root-$idx.annex
+    mkannexfile $fname
+done
+
+[ $(gin ls --short | grep -F "MD" | wc -l) -eq 72 ]
+
+gin upload *.annex *.git  # upload all except .untracked
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 72 ]
+
+# should have 3 commits so far
+[ $(gin git --no-pager log | grep "^commit" | wc -l) -eq 3 ]
 
 # Create some subdirectories with files
 for idx in {a..f}
@@ -76,9 +93,8 @@ done
 # Upload the files of the first subdirectory only and a couple from the second
 gin upload subdir-a subdir-b/subfile-5.annex subdir-b/subfile-10.annex
 
-
 # should only have 12 new synced files
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 33 ]
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
 # there should be 54 untracked files total
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 54 ]
 # can also check each directory individually
@@ -89,8 +105,23 @@ do
     [ $(gin ls --short $dirname | grep -F "??" | wc -l) -eq 10 ]
 done
 
+# Unlocking should be noop in direct mode
+gin unlock root-70.annex root-75.annex root-84.annex
+
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
+
+gin unlock subdir-a
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
+
+# Lock too
+gin lock root-84.annex
+[ $(gin ls --short | grep -F "UL" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 84 ]
+
 # There should be no NC files so far
-[ $(gin ls --short subdir-b | grep -F "NC" | wc -l) -eq 0 ]
+[ $(gin ls --short | grep -F "NC" | wc -l) -eq 0 ]
 
 # drop some files and check the counts
 gin rmc subdir-b/subfile-5.annex
@@ -104,24 +135,6 @@ gin remove-content subdir-a
 [ $(gin ls --short subdir-a | grep -F "NC" | wc -l) -eq 10 ]
 [ $(gin ls -s | grep -F "NC" | wc -l) -eq 12 ]
 
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 21 ]
-
-# Create some small files that should be added to git (not annex)
-mkdir -v files-for-git
-pushd files-for-git
-for idx in {1..5}
-do
-    fname=subfile-$idx.git
-    mkgitfile $fname
-done
-popd
-
-gin upload files-for-git
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 26 ]
-
-# none of these files should be in annex
-[ $(gin annex status files-for-git | wc -l) -eq 0 ]
-
 if [ "$(gin git config --local core.symlinks)" != "false" ]
 then
     # NC files are broken symlinks
@@ -131,11 +144,6 @@ else
     [ $(grep -F "git/annex/objects" -r . | wc -l) -eq 12 ]
 fi
 
-# modify 2 git files and check their status
-mkgitfile files-for-git/subfile-3.git
-mkgitfile files-for-git/subfile-2.git
-[ $(gin ls --short files-for-git | grep -F "MD" | wc -l) -eq 2 ]
-
 # push everything and then rmc it
 gin upload .
 gin rmc .
@@ -143,14 +151,15 @@ gin rmc .
 # annex files are now NC
 [ $(gin ls --short | grep -F "NC" | wc -l) -eq 81 ]
 
-# git files are still OK
-[ $(gin ls --short | grep -F "OK" | wc -l) -eq 11 ]
+# git files are still OK (untracked were added too)
+[ $(gin ls --short | grep -F "OK" | wc -l) -eq 57 ]
 
 
 # remove a few files and check their status
-rm -v files-for-git/subfile-1.git
+rm -v subdir-a/subfile-1.annex
+rm -v root-10.git
 rm -rv subdir-b
-[ $(gin ls --short | grep -F "RM" | wc -l) -eq 11 ]
+[ $(gin ls --short | grep -F "RM" | wc -l) -eq 12 ]
 
 gin commit .
 [ $(gin ls --short | grep -F "RM" | wc -l) -eq 0 ]
@@ -158,7 +167,7 @@ gin commit .
 # add new files, remove some existing ones, check status and upload
 mkannexfile "new-annex-file"
 mkgitfile "new-git-file"
-rm -r subdir-a
+rm -r subdir-c
 [ $(gin ls --short | grep -F "RM" | wc -l) -eq 10 ]
 [ $(gin ls --short | grep -F "??" | wc -l) -eq 2 ]
 
