@@ -8,7 +8,7 @@ pushd $loc
 
 echo "****** Running ${BASH_SOURCE[0]} ******"
 
-set -xeu
+set -eu
 source ./setenv.sh
 
 testroot="/tmp/gintest"
