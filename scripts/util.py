@@ -22,3 +22,14 @@ def getrevcount(r):
     n, _ = r.runcommand("git", "rev-list", "--count", "HEAD",
                                echo=False)
     return int(n)
+
+
+def assert_status(r, status):
+    """
+    Run `gin ls --short` and check the count for each status against the given
+    `status` dictionary.
+    """
+    out, err = r.runcommand("gin", "ls", "--short")
+    for code, count in status.items():
+        s = sum(1 for line in out.splitlines() if line.startswith(code))
+        assert s == count, f"Expected {count}, got {s}"
