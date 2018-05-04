@@ -123,7 +123,7 @@ popd
 gin lock root-84.annex
 [ $(gin ls --short | grep -F "UL" | wc -l) -eq 12 ]
 
-# check one of thee remaining unlocked files explicitly
+# check one of the remaining unlocked files explicitly
 [ $(gin ls --short root-70.annex | grep -F "UL" | wc -l) -eq 1 ]
 
 # There should be no NC files so far

@@ -24,12 +24,12 @@ def getrevcount(r):
     return int(n)
 
 
-def assert_status(r, status):
+def assert_status(r, path=".", status=dict()):
     """
     Run `gin ls --short` and check the count for each status against the given
     `status` dictionary.
     """
-    out, err = r.runcommand("gin", "ls", "--short")
+    out, err = r.runcommand("gin", "ls", "--short", path)
     for code, count in status.items():
         s = sum(1 for line in out.splitlines() if line.startswith(code))
-        assert s == count, f"Expected {count}, got {s}"
+        assert s == count, f"[{code}] Expected {count}, got {s}"
