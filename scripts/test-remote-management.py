@@ -19,14 +19,14 @@ def test_local_only():
     for idx in range(10):
         util.mkrandfile(f"root-{idx}.annex", 100)
 
-    util.assert_status(r, {"??": 25})
+    util.assert_status(r, status={"??": 25})
 
     out, err = r.runcommand("gin", "commit", "*.annex")
     # TODO: LC status should be something else
-    util.assert_status(r, {"??": 15, "LC": 10})
+    util.assert_status(r, status={"??": 15, "LC": 10})
 
     out, err = r.runcommand("gin", "commit", ".")
-    util.assert_status(r, {"OK": 15, "LC": 10})
+    util.assert_status(r, status={"OK": 15, "LC": 10})
 
     # cleanup
     r.runcommand("gin", "annex", "uninit", exit=False)
