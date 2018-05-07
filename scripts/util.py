@@ -30,6 +30,8 @@ def assert_status(r, path=".", status=dict()):
     `status` dictionary.
     """
     out, err = r.runcommand("gin", "ls", "--short", path)
+    actual = {}
     for code, count in status.items():
         s = sum(1 for line in out.splitlines() if line.startswith(code))
-        assert s == count, f"[{code}] Expected {count}, got {s}"
+        actual[code] = s
+    assert status == actual, f"Expected {status}; got {actual}"
