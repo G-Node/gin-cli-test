@@ -1,9 +1,7 @@
 import os
 import util
-from random import randint
 from runner import Runner
 from hashlib import md5
-
 import pytest
 
 
@@ -241,8 +239,7 @@ def runner():
     r = Runner()
     r.login()
     # create repo (remote and local) and cd into directory
-    reponame = f"gin-test-{randint(0, 9999):04}"
-    # repopath = f"{username}/{reponame}"
+    reponame = util.randrepo()
     print("Setting up test repository")
     r.runcommand("gin", "create", reponame,
                  "Test repository for versioning",

@@ -7,7 +7,6 @@ mode, where (un)locking is a no-op.
 """
 import os
 import shutil
-from random import randint
 from runner import Runner
 import util
 import pytest
@@ -21,7 +20,7 @@ def runner():
     r = Runner()
     r.login()
 
-    reponame = f"gin-test-{randint(0, 9999):04}"
+    reponame = util.randrepo()
     r.runcommand("gin", "create", reponame,
                  "Test repository for all states")
     r.cdrel(reponame)

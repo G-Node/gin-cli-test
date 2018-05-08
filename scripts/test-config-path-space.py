@@ -1,16 +1,15 @@
 import os
 import shutil
-from random import randint
 from runner import Runner
 import util
 import tempfile
 import pytest
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def runner():
     r = Runner()
-    # Change gin and git server address:port in config and test failures
+    # change config dir to some temporary directory with spaces in the name
     defaultconfdir = r.env["GIN_CONFIG_DIR"]
     conftemp = tempfile.TemporaryDirectory(prefix="conf place with spaces")
     spaceconfdir = os.path.join(conftemp.name, "conf")
@@ -18,11 +17,10 @@ def runner():
     shutil.copytree(defaultconfdir, spaceconfdir)
     r.login()
     # create repo (remote and local) and cd into directory
-    reponame = f"gin-test-{randint(0, 9999):04}"
-    # repopath = f"{username}/{reponame}"
+    reponame = util.randrepo()
     print("Setting up test repository")
     r.runcommand("gin", "create", reponame,
-                 "Test repository for cascading configurations",
+                 "Test repository for alt config path (with spaces)",
                  echo=False)
     r.cdrel(reponame)
 
