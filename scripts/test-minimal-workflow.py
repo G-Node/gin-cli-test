@@ -24,7 +24,7 @@ import pytest
 def hashfiles():
     hashes = dict()
     for fname in glob("*"):
-        if os.path.isfile(fname):
+        if os.path.exists(fname):
             hashes[fname] = util.md5sum(fname)
         else:
             # For broken links: annexed files without content
@@ -91,7 +91,7 @@ def test_workflow(runner):
         elif k.endswith("annex"):
             assert orig != cur
             assert os.path.islink(k)
-            assert not os.path.isfile(k)
+            assert not os.path.exists(k)
         else:
             assert False, f"Unexpected file {k}"
 
