@@ -21,9 +21,6 @@ import util
 import pytest
 
 
-zerostatus = {"OK": 0, "UL": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
-
-
 def hashfiles():
     hashes = dict()
     for fname in glob("*"):
@@ -80,7 +77,7 @@ def test_workflow(runner):
     r.cdrel(r.reponame)
 
     # should have 5 OK files and 7 NC files
-    status = zerostatus.copy()
+    status = util.zerostatus()
     status["OK"] = 5
     status["NC"] = 7
     util.assert_status(r, status=status)

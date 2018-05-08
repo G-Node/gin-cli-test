@@ -12,9 +12,6 @@ import util
 import pytest
 
 
-zerostatus = {"OK": 0, "UL": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
-
-
 @pytest.fixture
 def runner():
     r = Runner()
@@ -51,7 +48,7 @@ def run_checks(r, mode):
     for idx in range(70, 90):
         util.mkrandfile(f"root-{idx}.annex", 2000)
 
-    status = zerostatus.copy()
+    status = util.zerostatus()
     status["??"] += 70
     util.assert_status(r, status=status)
 
@@ -120,12 +117,12 @@ def run_checks(r, mode):
     status["OK"] += 12
     status["??"] -= 12
     util.assert_status(r, status=status)
-    subb = zerostatus.copy()
+    subb = util.zerostatus()
     subb["OK"] = 2
     subb["??"] = 8
     util.assert_status(r, path="subdir-b", status=subb)
 
-    tenuntracked = zerostatus.copy()
+    tenuntracked = util.zerostatus()
     tenuntracked["??"] = 10
     for idx in "cdef":
         util.assert_status(r, path=f"subdir-{idx}", status=tenuntracked)
@@ -144,7 +141,7 @@ def run_checks(r, mode):
     util.assert_status(r, status=status)
 
     # Check subdirectory only
-    tenul = zerostatus.copy()
+    tenul = util.zerostatus()
     tenul["UL"] = 10 * mode
     tenul["OK"] = 10 * (1 - mode)
     util.assert_status(r, path="subdir-a", status=tenul)
@@ -160,7 +157,7 @@ def run_checks(r, mode):
     status["OK"] += 1 * mode
     util.assert_status(r, status=status)
 
-    oneul = zerostatus.copy()
+    oneul = util.zerostatus()
     oneul["UL"] = 1 * mode
     oneul["OK"] = 1 * (1 - mode)
     # Check one of the remaining unlocked files explicitly
@@ -183,7 +180,7 @@ def run_checks(r, mode):
     status["OK"] -= 10 * (1 - mode)
     util.assert_status(r, status=status)
 
-    suba = zerostatus.copy()
+    suba = util.zerostatus()
     suba["NC"] += 10
     util.assert_status(r, status=suba, path="subdir-a")
     subb["OK"] -= 1

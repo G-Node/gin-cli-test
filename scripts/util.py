@@ -3,6 +3,10 @@ from random import randint
 from hashlib import md5
 
 
+def zerostatus():
+    return {"OK": 0, "UL": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
+
+
 def randrepo():
     return f"gin-test-{randint(0, 9999):04}"
 
