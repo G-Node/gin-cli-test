@@ -1,44 +1,10 @@
 import os
 import util
 from runner import Runner
-from hashlib import md5
 import pytest
 
 
 GLOBALCOMMITCOUNT = 0
-
-
-def lsfiles(path):
-    files = []
-    for root, dirs, fnames in os.walk(path):
-        files.extend([os.path.join(root, f)
-                      for f in fnames])
-    return files
-
-
-def md5sum(filename, printhash=False):
-    with open(filename, "rb") as thefile:
-        fdata = thefile.read()
-        msum = md5(fdata).hexdigest()
-    return msum
-
-
-def hashtree(r):
-    curtree = dict()
-    head, err = r.runcommand("git", "rev-parse", "HEAD", echo=False)
-    print(f"Hashing files in working tree (at {head})")
-
-    gitfiles, err = r.runcommand("git", "ls-files", echo=False)
-    gitfiles = gitfiles.splitlines()
-    r.runcommand("gin", "get-content", ".", echo=False)
-    r.runcommand("gin", "unlock", ".", echo=False)
-    for filepath in gitfiles:
-        msum = md5sum(filepath)
-        curtree[filepath] = msum
-        # print(f"{filepath}: {msum}")
-
-    r.runcommand("gin", "lock", ".", echo=False)
-    return head, curtree
 
 
 def revhash(r, num, paths=None):
@@ -126,7 +92,7 @@ def test_repo_versioning(runner, hashes):
         assert expecting_changes == (newn == curtotalrev + 1),\
             "Version command did not create a new commit"
         # compute current hashes and compare with old entry in dict
-        head, curhashes = hashtree(r)
+        head, curhashes = util.hashtree(r)
         assert expecting_changes == (head not in hashes),\
             "New head same as an old head"
         hashes[head] = curhashes
@@ -220,8 +186,8 @@ def test_version_copyto(runner, hashes):
         r.runcommand("gin", "get-content", dest, exit=False)
         # hash checked out file(s)
         # assumes all files in dest are from oldrevhash
-        for fn in lsfiles(dest):
-            cohash = md5sum(fn)
+        for fn in util.lsfiles(dest):
+            cohash = util.md5sum(fn)
             origname = fn[len(dest)+1:-16]
             print(f"{fn} becomes {origname}")
             assert cohash == hashes[oldrevhash][origname],\
@@ -260,13 +226,13 @@ def hashes(runner):
     GLOBALCOMMITCOUNT = 0
     hashes = dict()
 
-    head, curhashes = hashtree(r)
+    head, curhashes = util.hashtree(r)
     hashes[head] = curhashes
 
     # add files and compute their md5 hashes
     create_files(r)
     out, err = r.runcommand("gin", "upload", ".", echo=False)
-    head, curhashes = hashtree(r)
+    head, curhashes = util.hashtree(r)
     hashes[head] = curhashes
     GLOBALCOMMITCOUNT = 2
 
@@ -276,7 +242,7 @@ def hashes(runner):
         r.runcommand("gin", "unlock", ".", echo=False)
         create_files(r)
         out, err = r.runcommand("gin", "upload", ".", echo=False)
-        head, curhashes = hashtree(r)
+        head, curhashes = util.hashtree(r)
         hashes[head] = curhashes
         GLOBALCOMMITCOUNT += 1
 
