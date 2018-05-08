@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+docker build ginclibase -t achkts/gin-cli-deps
+docker push achkts/gin-cli-deps
