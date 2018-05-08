@@ -26,10 +26,7 @@ def test_create_from_local():
     r.runcommand("gin", "create", "--here", reponame,
                  "Test repository for create --here. Created with test script")
     r.runcommand("gin", "upload", ".")
-
-    out, err = r.runcommand("gin", "ls", "--short")
-    synced = sum(1 for line in out.splitlines() if line.startswith("OK"))
-    assert synced == 72, f"Expected 72 files, got {synced}"
+    util.assert_status(r, status={"OK": 72})
 
     # gin upload command should not have created an extra commit
     out, err = r.runcommand("gin", "git", "rev-list", "--count", "HEAD")
@@ -52,83 +49,56 @@ def test_create_from_local():
     r.runcommand("gin", "upload", "subdir-a", "subdir-b/subfile-5.annex",
                  "subdir-b/subfile-10.annex")
 
-    def lscount(*paths, fltr=""):
-        out, err = r.runcommand("gin", "ls", "--short", *paths)
-        return sum(1 for line in out.splitlines() if line.startswith(fltr))
+    status = {"OK": 84, "??": 54}
+    util.assert_status(r, status=status)
 
-    # should only have 12 new synced files
-    synced = lscount(fltr="OK")
-    assert synced == 84, f"Expected 84 files, got {synced}"
-    # there should be 54 untracked files total
-    untracked = lscount(fltr="??")
-    assert untracked == 54, f"Expected 54 files, got {untracked}"
     # can also check each directory individually
-    untracked = lscount("subdir-b", fltr="??")
-    assert untracked == 8, f"Expected 8 files, got {untracked}"
-    for c in "cdef":
-        untracked = lscount(f"subdir-{c}", fltr="??")
-        assert untracked == 10, f"Expected 10 files, got {untracked}"
+    subb = {"??": 8}
+    util.assert_status(r, path="subdir-b", status=subb)
+    subcdef = {"??": 10}
+    for p in "cdef":
+        util.assert_status(r, path=f"subdir-{p}", status=subcdef)
 
-    # # Unlock some files
+    # Unlock some files
     r.runcommand("gin", "unlock", "root-70.annex",
                  "root-75.annex", "root-84.annex")
 
-    # # Unlocked files should be marked UL
-    unlocked = lscount(fltr="UL")
-    assert unlocked == 3, f"Expected 3 files, got {unlocked}"
+    # Unlocked files should be marked UL
+    util.assert_status(r, status={"UL": 3})
 
-    # # Unlock a whole directory
+    # Unlock a whole directory
     r.runcommand("gin", "unlock", "subdir-a")
-    unlocked = lscount(fltr="UL")
-    assert unlocked == 13, f"Expected 13 files, got {unlocked}"
+    util.assert_status(r, status={"UL": 13})
 
-    # # Check subdirectory only
-    unlocked = lscount("subdir-a", fltr="UL")
-    assert unlocked == 10, f"Expected 10 files, got {unlocked}"
+    # Check subdirectory only
+    util.assert_status(r, path="subdir-a", status={"UL": 10})
 
-    # # Check again but from within the subdir
-    # pushd subdir-a
+    # Check again but from within the subdir
     r.cdrel("subdir-a")
-    unlocked = lscount(fltr="UL")
-    assert unlocked == 10, f"Expected 10 files, got {unlocked}"
+    util.assert_status(r, status={"UL": 10})
     r.cdrel("..")
 
     # Relock one of the files
     # gin lock root-84.annex
     r.runcommand("gin", "lock", "root-84.annex")
-    unlocked = lscount(fltr="UL")
-    assert unlocked == 12, f"Expected 12 files, got {unlocked}"
+    util.assert_status(r, status={"UL": 12})
 
-    # check one of thee remaining unlocked files explicitly
-    unlocked = lscount("root-70.annex", fltr="UL")
-    assert unlocked == 1, f"Expected 1 files, got {unlocked}"
+    # check one of the remaining unlocked files explicitly
+    util.assert_status(r, path="root-70.annex", status={"UL": 1})
 
     # There should be no NC files so far
-    nocont = lscount(fltr="NC")
-    assert nocont == 0, f"Expected 0 files, got {nocont}"
+    util.assert_status(r, status={"NC": 0})
 
     # drop some files and check the counts
     r.runcommand("gin", "rmc", "subdir-b/subfile-5.annex")
-    nocont = lscount("subdir-b", fltr="NC")
-    assert nocont == 1, f"Expected 1 files, got {nocont}"
+    util.assert_status(r, path="subdir-b", status={"NC": 1})
 
     r.runcommand("gin", "rmc", "subdir-b")
-    nocont = lscount("subdir-b", fltr="NC")
-    assert nocont == 2, f"Expected 2 files, got {nocont}"
+    util.assert_status(r, path="subdir-b", status={"NC": 2})
 
     r.runcommand("gin", "remove-content", "subdir-a")
-    nocont = lscount("subdir-b", fltr="NC")
-    assert nocont == 2, f"Expected 2 files, got {nocont}"
-    nocont = lscount("subdir-a", fltr="NC")
-    assert nocont == 10, f"Expected 10 files, got {nocont}"
-    nocont = lscount(fltr="NC")
-    assert nocont == 12, f"Expected 12 files, got {nocont}"
-
-    # # NC files are broken symlinks
-    # [ $(find -L . -type l   | wc -l) -eq 12 ]
-
-    # cleanup
-    r.cleanup(reponame)
-    r.logout()
+    util.assert_status(r, path="subdir-b", status={"NC": 2})
+    util.assert_status(r, path="subdir-a", status={"NC": 10})
+    util.assert_status(r, status={"NC": 12})
 
     print("Done!")
