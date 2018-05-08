@@ -5,15 +5,31 @@ from random import randint
 from runner import Runner
 import util
 import tempfile
+import pytest
 
 
-def test_errors():
-    norepoerr = "E: This command must be run from inside a gin repository."
-
+@pytest.fixture
+def runner():
     r = Runner()
-
     r.login()
     # username = r.username
+    # create repo (remote and local) and cd into directory
+    reponame = util.randrepo()
+    # repopath = f"{username}/{reponame}"
+    r.runcommand("gin", "create", reponame,
+                 "Test repository for error output. Created with test scripts")
+    r.reponame = reponame
+
+    yield r
+
+    print(f"Cleaning up {reponame}")
+    r.cleanup(reponame)
+    r.logout()
+
+
+def test_errors(runner):
+    r = runner
+    norepoerr = "E: This command must be run from inside a gin repository."
 
     commands = [
         "upload",
@@ -36,12 +52,7 @@ def test_errors():
     out, err = r.runcommand("gin", "download", exit=False)
     assert err == norepoerr
 
-    # create repo (remote and local) and cd into directory
-    reponame = f"gin-test-{randint(0, 9999):04}"
-    # repopath = f"{username}/{reponame}"
-    r.runcommand("gin", "create", reponame,
-                 "Test repository for error output. Created with test scripts")
-    r.cdrel(reponame)
+    r.cdrel(r.reponame)
 
     # Unable to run any command on file that does not exist
     out, err = r.runcommand("gin", "upload", "foobar", exit=False)
@@ -207,7 +218,7 @@ def test_errors():
     # Creating repository that already exists
     r.cdrel("..")
 
-    out, err = r.runcommand("gin", "create", reponame, exit=False)
+    out, err = r.runcommand("gin", "create", r.reponame, exit=False)
     assert err == ("E: invalid repository name or repository with the same "
                    "name already exists")
 
@@ -228,8 +239,5 @@ def test_errors():
 
     out, err = r.runcommand("gin", "repos")
     assert anotherrepo in out
-
-    r.cleanup(reponame)
-    r.logout()
 
     print("DONE!")

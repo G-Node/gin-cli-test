@@ -10,45 +10,39 @@ import shutil
 from random import randint
 from runner import Runner
 import util
+import pytest
 
 
 zerostatus = {"OK": 0, "UL": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
 
 
-def test_all_states_indirect():
+@pytest.fixture
+def runner():
     r = Runner()
     r.login()
 
-    # create repo (remote and local) and cd into directory
     reponame = f"gin-test-{randint(0, 9999):04}"
     r.runcommand("gin", "create", reponame,
-                 "Test repository for all states (indirect mode)")
+                 "Test repository for all states")
     r.cdrel(reponame)
-    run_checks(r, mode=1)
 
+    yield r
+
+    print(f"Cleaning up {reponame}")
     r.cleanup(reponame)
     r.logout()
 
-    print("DONE!")
+
+def test_all_states_indirect(runner):
+    run_checks(runner, mode=1)
+    print("Done!")
 
 
-def test_all_states_direct():
-    r = Runner()
-    r.login()
-
-    # create repo (remote and local) and cd into directory
-    reponame = f"gin-test-{randint(0, 9999):04}"
-    r.runcommand("gin", "create", reponame,
-                 "Test repository for all states (direct mode)")
-    r.cdrel(reponame)
+def test_all_states_direct(runner):
     print("************ SWITCHING TO DIRECT MODE ************")
-    r.runcommand("git", "annex", "direct")
-    run_checks(r, mode=0)
-
-    r.cleanup(reponame)
-    r.logout()
-
-    print("DONE!")
+    runner.runcommand("git", "annex", "direct")
+    run_checks(runner, mode=0)
+    print("Done!")
 
 
 def run_checks(r, mode):

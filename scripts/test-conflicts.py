@@ -1,9 +1,11 @@
 import os
 from runner import Runner
 import util
+import pytest
 
 
-def test_download_over_modified():
+@pytest.fixture
+def runner():
     # Use 2 runner instances to checkout two clones and create merge conflicts
     loca = Runner()
     locb = Runner()
@@ -22,6 +24,17 @@ def test_download_over_modified():
     locb.runcommand("gin", "get", repopath)
     locb.cdrel(reponame)
 
+    yield (loca, locb)
+
+    print(f"Cleaning up {reponame}")
+    # cleanup
+    loca.cleanup(reponame)
+    loca.logout()
+    locb.runcommand("git", "annex", "uninit")
+
+
+def test_download_over_modified(runner):
+    loca, locb = runner
     # create files in root (loca)
     loca.cdrel()
     for idx in range(5):
@@ -88,10 +101,5 @@ def test_download_over_modified():
     expmsg = ("download failed: local modified or untracked file would be "
               "overwritten by download")
     assert err.endswith(expmsg)
-
-    # cleanup
-    loca.cleanup(reponame)
-    loca.logout()
-    locb.runcommand("git", "annex", "uninit")
 
     print("Done!")

@@ -1,21 +1,31 @@
 import os
 from runner import Runner
 import util
+import pytest
 
 
-def test_create_from_local():
+@pytest.fixture
+def runner():
     r = Runner()
     r.login()
-    # username = r.username
 
     # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
-    # repopath = f"{username}/{reponame}"
+    r.reponame = reponame
 
     localdir = f"{reponame}-local-clone"
     os.mkdir(localdir)
     r.cdrel(localdir)
 
+    yield r
+
+    print(f"Cleaning up {reponame}")
+    r.cleanup(reponame)
+    r.logout()
+
+
+def test_create_from_local(runner):
+    r = runner
     # create files in root
     for idx in range(51):
         util.mkrandfile(f"root-{idx}.git", 1)
@@ -23,7 +33,7 @@ def test_create_from_local():
         util.mkrandfile(f"root-{idx}.annex", 100)
 
     # Create from local directory
-    r.runcommand("gin", "create", "--here", reponame,
+    r.runcommand("gin", "create", "--here", r.reponame,
                  "Test repository for create --here. Created with test script")
     r.runcommand("gin", "upload", ".")
     util.assert_status(r, status={"OK": 72})
