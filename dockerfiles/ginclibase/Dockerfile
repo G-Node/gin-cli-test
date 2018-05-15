@@ -3,4 +3,5 @@
 FROM base/archlinux
 
 RUN pacman -Syu --noconfirm openssh git-annex python-pytest python-yaml gist
+RUN paccache -rk0
 ENV PATH /ginbin:$PATH

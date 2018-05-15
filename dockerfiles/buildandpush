@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 
-docker build ginclibase -t achkts/gin-cli-deps
+if [[ $1 == "--update" ]]
+then
+    ncarg="--no-cache"
+else
+    ncarg=""
+fi
+docker build ${ncarg} ginclibase -t achkts/gin-cli-deps
 docker push achkts/gin-cli-deps
