@@ -200,6 +200,36 @@ def test_local_only(runner):
     print("Done!")
 
 
-# def test_add_gin_remote(runner):
-#     r = runner
+def test_add_gin_remote(runner):
+    r = runner
+    r.runcommand("gin", "init")
 
+    ngit = 3
+    nannex = 2
+
+    # create files in root
+    for idx in range(ngit):
+        util.mkrandfile(f"root-{idx}.git", 3)
+    for idx in range(nannex):
+        util.mkrandfile(f"root-{idx}.annex", 200)
+
+    status = util.zerostatus()
+    status["??"] = nannex + ngit
+    util.assert_status(r, status=status)
+
+    r.runcommand("gin", "commit", ".")
+    status["OK"] = ngit
+    status["LC"] = nannex
+    status["??"] = 0
+    util.assert_status(r, status=status)
+
+    r.login()
+    r.runcommand("gin", "create", "--no-clone", r.reponame,
+                 "Test repository for add remote")
+    repopath = f"{r.username}/{r.reponame}"
+    r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}")
+
+    r.runcommand("gin", "upload")
+    status["OK"] += status["LC"]
+    status["LC"] = 0
+    util.assert_status(r, status=status)
