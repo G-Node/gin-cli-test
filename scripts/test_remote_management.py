@@ -13,16 +13,27 @@ def runner():
     localdir = f"{reponame}"
     os.mkdir(localdir)
     r.cdrel(localdir)
+    r.reponame = reponame
 
     yield r
 
     print(f"Cleaning up {reponame}")
     # cleanup
-    r.runcommand("gin", "annex", "uninit", exit=False)
+    r.cleanup(reponame)
+    r.logout()
 
 
 def test_local_only(runner):
     r = runner
+
+    # redefine cleanup and logout since they would error out
+    def cleanup(reponame):
+        r.runcommand("gin", "annex", "uninit", exit=False)
+    r.cleanup = cleanup
+
+    def logout():
+        pass
+    r.logout = logout
 
     r.runcommand("gin", "init")
 
