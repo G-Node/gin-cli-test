@@ -34,7 +34,7 @@ class Runner(object):
         if stdout:
             doecho(f"{stdout}")
         if stderr:
-            doecho(f"E: {stderr}")
+            doecho(f"{stderr}")
         if p.returncode and exit:
             sys.exit(p.returncode)
         return stdout, stderr
