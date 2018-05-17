@@ -233,6 +233,57 @@ def test_create_remote_on_add(runner):
     util.assert_status(r, status=status)
 
 
+def test_create_remote_prompt(runner):
+    r = runner
+    r.runcommand("gin", "init")
+
+    ngit = 3
+    nannex = 2
+
+    # create files in root
+    for idx in range(ngit):
+        util.mkrandfile(f"root-{idx}.git", 3)
+    for idx in range(nannex):
+        util.mkrandfile(f"root-{idx}.annex", 200)
+
+    status = util.zerostatus()
+    status["??"] = nannex + ngit
+    util.assert_status(r, status=status)
+
+    r.runcommand("gin", "commit", ".")
+    status["OK"] = ngit
+    status["LC"] = nannex
+    status["??"] = 0
+    util.assert_status(r, status=status)
+
+    r.login()
+    repopath = f"{r.username}/{r.reponame}"
+    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+                            inp="abort", exit=False)
+    assert err == "E: aborted"
+    out, err = r.runcommand("git", "remote", "-v")
+    assert not out, f"Expected empty output, got\n{out}"
+    assert not err, f"Expected empty error, got\n{err}"
+
+    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+                            inp="add anyway")
+    out, err = r.runcommand("git", "remote", "-v")
+    assert len(out.splitlines()) == 2, "Unexpected output"
+    assert not err, f"Expected empty error, got\n{err}"
+
+    out, err = r.runcommand("gin", "upload", exit=False)
+    assert err, "Expected error, got nothing"
+
+    r.runcommand("git", "remote", "rm", "origin")
+    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+                            inp="create")
+    out, err = r.runcommand("gin", "upload")
+
+    status["OK"] += status["LC"]
+    status["LC"] = 0
+    util.assert_status(r, status=status)
+
+
 def test_add_gin_remote(runner):
     r = runner
     r.runcommand("gin", "init")
