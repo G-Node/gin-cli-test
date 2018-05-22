@@ -265,8 +265,9 @@ def test_create_remote_prompt(runner):
     r.login()
     repopath = f"{r.username}/{r.reponame}"
     out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
-                            inp="abort", exit=False)
-    assert err == "E: aborted"
+                            inp="abort")
+    assert not err, f"Expected empty error, got\n{err}"
+    assert out.endswith("aborted")
     out, err = r.runcommand("git", "remote", "-v")
     assert not out, f"Expected empty output, got\n{out}"
     assert not err, f"Expected empty error, got\n{err}"
