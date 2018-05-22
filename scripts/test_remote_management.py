@@ -31,10 +31,6 @@ def test_local_only(runner):
         r.runcommand("gin", "annex", "uninit", exit=False)
     r.cleanup = cleanup
 
-    def logout():
-        pass
-    r.logout = logout
-
     r.runcommand("gin", "init")
 
     ngit = 15
@@ -68,9 +64,19 @@ def test_local_only(runner):
     status["??"] += nuntracked
     util.assert_status(r, status=status)
 
+    r.login()
+
     # Upload does nothing
-    r.runcommand("gin", "upload", exit=False)
+    out, err = r.runcommand("gin", "upload", exit=False)
     util.assert_status(r, status=status)
+    assert err, "Expected error, got nothing"
+    assert err == "[error] upload failed: no remote configured"
+
+    # Upload should not add any new files
+    out, err = r.runcommand("gin", "upload", ".", exit=False)
+    util.assert_status(r, status=status)
+    assert err, "Expected error, got nothing"
+    assert err == "[error] upload failed: no remote configured"
 
     # gin upload command should not have created an extra commit
     assert util.getrevcount(r) == 3
