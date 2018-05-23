@@ -26,7 +26,7 @@ def runner():
 def test_local_only(runner):
     r = runner
 
-    # redefine cleanup and logout since they would error out
+    # redef cleanup
     def cleanup(reponame):
         r.runcommand("gin", "annex", "uninit", exit=False)
     r.cleanup = cleanup
@@ -319,8 +319,72 @@ def test_add_gin_remote(runner):
                  "Test repository for add remote")
     repopath = f"{r.username}/{r.reponame}"
     r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}")
+    r.runcommand("gin", "upload")
+    status["OK"] += status["LC"]
+    status["LC"] = 0
+    util.assert_status(r, status=status)
+
+    # remove remote, add it with a different name (not origin) and see if it
+    # works
+    util.mkrandfile(f"final-file.annex", 500)
+    r.runcommand("gin", "git", "remote", "rm", "origin")
+    r.runcommand("gin", "git", "config", "--unset", "gin.remote")
+    r.runcommand("gin", "add-remote", "notorigin", f"gin:{repopath}")
+    r.runcommand("gin", "upload", "final-file.annex")
+    status["OK"] += 1
+    util.assert_status(r, status=status)
+
+
+def test_add_directory_remote(runner):
+    r = runner
+    r.runcommand("gin", "init")
+
+    # redef cleanup
+    def cleanup(reponame):
+        r.runcommand("gin", "annex", "uninit", exit=False)
+    r.cleanup = cleanup
+
+    # redef logout
+    def logout():
+        pass
+    r.logout = logout
+
+    ngit = 3
+    nannex = 2
+
+    # create files in root
+    for idx in range(ngit):
+        util.mkrandfile(f"root-{idx}.git", 3)
+    for idx in range(nannex):
+        util.mkrandfile(f"root-{idx}.annex", 200)
+
+    status = util.zerostatus()
+    status["??"] = nannex + ngit
+    util.assert_status(r, status=status)
+
+    r.runcommand("gin", "commit", ".")
+    status["OK"] = ngit
+    status["LC"] = nannex
+    status["??"] = 0
+    util.assert_status(r, status=status)
+
+    fsremotedir = os.path.join(r.testroot.name, "annexdata")
+    r.runcommand("gin", "add-remote", "--create",
+                 "lanbackup", f"dir:{fsremotedir}")
+    r.runcommand("gin", "git", "remote", "-v")
 
     r.runcommand("gin", "upload")
     status["OK"] += status["LC"]
     status["LC"] = 0
     util.assert_status(r, status=status)
+
+    # TODO: Test cloning from a different location, uploading, and downloading
+
+    # manually cleanup "remote"
+    origdir = r.cmdloc
+    r.cmdloc = fsremotedir
+    print(f"Running uninit in {fsremotedir}")
+    r.runcommand("pwd")
+    # r.runcommand("git", "config", "--local", "--bool", "core.bare", "false")
+    r.runcommand("gin", "annex", "uninit", exit=False)
+    r.cmdloc = origdir
