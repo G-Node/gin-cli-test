@@ -211,9 +211,11 @@ def runner():
                  "Test repository for versioning",
                  echo=False)
     r.cdrel(reponame)
+    r.repositories[r.cmdloc] = reponame
 
     yield r
-    r.cleanup(reponame)
+
+    r.cleanup()
     r.logout()
 
     print("DONE!")

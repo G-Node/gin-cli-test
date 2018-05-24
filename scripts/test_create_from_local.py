@@ -9,7 +9,6 @@ def runner():
     r = Runner()
     r.login()
 
-    # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
     r.reponame = reponame
 
@@ -19,8 +18,7 @@ def runner():
 
     yield r
 
-    print(f"Cleaning up {reponame}")
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 
@@ -37,6 +35,7 @@ def test_create_from_local(runner):
                  "Test repository for create --here. Created with test script")
     r.runcommand("gin", "upload", ".")
     util.assert_status(r, status={"OK": 72})
+    r.repositories[r.cmdloc] = r.reponame
 
     # gin upload command should not have created an extra commit
     out, err = r.runcommand("gin", "git", "rev-list", "--count", "HEAD")

@@ -20,15 +20,15 @@ def runner():
     loca.runcommand("gin", "create", reponame,
                     "Repository for testing merge conflicts")
     loca.cdrel(reponame)
+    loca.repositories[loca.cmdloc] = reponame
     # Clone into B
     locb.runcommand("gin", "get", repopath)
     locb.cdrel(reponame)
+    locb.repositories[locb.cmdloc] = None
 
     yield (loca, locb)
 
-    print(f"Cleaning up {reponame}")
-    # cleanup
-    loca.cleanup(reponame)
+    loca.cleanup()
     loca.logout()
     locb.runcommand("git", "annex", "uninit")
 

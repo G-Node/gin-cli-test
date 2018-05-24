@@ -19,11 +19,11 @@ def runner():
     r.runcommand("gin", "create", reponame,
                  "Test repository for error output. Created with test scripts")
     r.reponame = reponame
+    r.repositories[r.cmdloc] = reponame
 
     yield r
 
-    print(f"Cleaning up {reponame}")
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 
@@ -235,6 +235,7 @@ def test_errors(runner):
         f"Repository download failed.\n'{anotherrepo}' already exists in the "
         "current directory and is not empty."
     )
+    r.repositories[r.cmdloc] = anotherrepo
     assert err == "[error] 1 operation failed"
 
     out, err = r.runcommand("gin", "repos")

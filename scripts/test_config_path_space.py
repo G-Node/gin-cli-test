@@ -23,11 +23,11 @@ def runner():
                  "Test repository for alt config path (with spaces)",
                  echo=False)
     r.cdrel(reponame)
+    r.repositories[r.cmdloc] = reponame
 
     yield r
 
-    print(f"Cleaning up {reponame}")
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 
@@ -36,4 +36,3 @@ def test_config_path(runner):
     util.mkrandfile("file21", 10000)
     util.mkrandfile("file22", 10)
     runner.runcommand("gin", "upload", "file21", "file22")
-    print("DONE!")

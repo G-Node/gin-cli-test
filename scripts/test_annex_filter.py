@@ -18,12 +18,12 @@ def runner():
     r.runcommand("gin", "create", reponame,
                  "Test repository for annex filtering")
     r.cdrel(reponame)
+    r.repositories[r.cmdloc] = reponame
     r.reponame = reponame
 
     yield r
 
-    print(f"Cleaning up {reponame}")
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 

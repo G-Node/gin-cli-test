@@ -17,21 +17,15 @@ def runner():
 
     yield r
 
-    print(f"Cleaning up {reponame}")
     # cleanup
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 
 def test_local_only(runner):
     r = runner
-
-    # redef cleanup
-    def cleanup(reponame):
-        r.runcommand("gin", "annex", "uninit", exit=False)
-    r.cleanup = cleanup
-
     r.runcommand("gin", "init")
+    r.repositories[r.cmdloc] = None
 
     ngit = 15
     nannex = 10
@@ -209,6 +203,7 @@ def test_local_only(runner):
 def test_create_remote_on_add(runner):
     r = runner
     r.runcommand("gin", "init")
+    r.repositories[r.cmdloc] = None
 
     ngit = 3
     nannex = 2
@@ -242,6 +237,7 @@ def test_create_remote_on_add(runner):
 def test_create_remote_prompt(runner):
     r = runner
     r.runcommand("gin", "init")
+    r.repositories[r.cmdloc] = None
 
     ngit = 3
     nannex = 2
@@ -294,6 +290,7 @@ def test_create_remote_prompt(runner):
 def test_add_gin_remote(runner):
     r = runner
     r.runcommand("gin", "init")
+    r.repositories[r.cmdloc] = None
 
     ngit = 3
     nannex = 2
@@ -317,6 +314,7 @@ def test_add_gin_remote(runner):
     r.login()
     r.runcommand("gin", "create", "--no-clone", r.reponame,
                  "Test repository for add remote")
+    r.repositories[r.cmdloc] = r.reponame
     repopath = f"{r.username}/{r.reponame}"
     r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}")
     r.runcommand("gin", "upload")
@@ -338,16 +336,7 @@ def test_add_gin_remote(runner):
 def test_add_directory_remote(runner):
     r = runner
     r.runcommand("gin", "init")
-
-    # redef cleanup
-    def cleanup(reponame):
-        r.runcommand("gin", "annex", "uninit", exit=False)
-    r.cleanup = cleanup
-
-    # redef logout
-    def logout():
-        pass
-    r.logout = logout
+    r.repositories[r.cmdloc] = None
 
     ngit = 3
     nannex = 2
@@ -372,6 +361,7 @@ def test_add_directory_remote(runner):
     r.runcommand("gin", "add-remote", "--create",
                  "lanbackup", f"dir:{fsremotedir}")
     r.runcommand("gin", "git", "remote", "-v")
+    r.repositories[fsremotedir] = None
 
     r.runcommand("gin", "upload")
     status["OK"] += status["LC"]
@@ -379,12 +369,3 @@ def test_add_directory_remote(runner):
     util.assert_status(r, status=status)
 
     # TODO: Test cloning from a different location, uploading, and downloading
-
-    # manually cleanup "remote"
-    origdir = r.cmdloc
-    r.cmdloc = fsremotedir
-    print(f"Running uninit in {fsremotedir}")
-    r.runcommand("pwd")
-    # r.runcommand("git", "config", "--local", "--bool", "core.bare", "false")
-    r.runcommand("gin", "annex", "uninit", exit=False)
-    r.cmdloc = origdir

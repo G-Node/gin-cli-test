@@ -42,11 +42,11 @@ def runner():
                  "Test a minimal workflow")
     r.reponame = reponame
     r.cdrel(reponame)
+    r.repositories[r.cmdloc] = reponame
 
     yield r
 
-    print(f"Cleaning up {reponame}")
-    r.cleanup(reponame)
+    r.cleanup()
     r.logout()
 
 
