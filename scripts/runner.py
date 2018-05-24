@@ -69,9 +69,12 @@ class Runner(object):
             # changing permissions for cleanup
             for root, dirs, files in os.walk(location):
                 for d in dirs:
-                    os.chmod(os.path.join(root, d), 0o770)
+                    dname = os.path.join(root, d)
+                    os.chmod(dname, 0o770)
                 for f in files:
-                    os.chmod(os.path.join(root, f), 0o770)
+                    fname = os.path.join(root, f)
+                    if os.path.exists(fname):  # skip broken links
+                        os.chmod(fname, 0o770)
             if repo:
                 repopath = f"{self.username}/{repo}"
                 self.runcommand("gin", "delete", repopath, inp=repopath)
