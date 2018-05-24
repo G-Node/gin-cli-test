@@ -3,6 +3,8 @@ import shutil
 from runner import Runner
 import util
 import pytest
+import json
+import socket
 
 
 @pytest.fixture
@@ -369,3 +371,115 @@ def test_add_directory_remote(runner):
     util.assert_status(r, status=status)
 
     # TODO: Test cloning from a different location, uploading, and downloading
+
+
+def assert_locations(r, expected):
+    out, err = r.runcommand("git", "annex", "whereis",
+                            "--json", echo=False)
+    for line in out.splitlines():
+        item = json.loads(line)
+        fname = item["file"]
+        locs = [f["description"] for f in item["whereis"]]
+        assert sorted(expected[fname]) == sorted(locs)
+
+
+def test_multiple_remotes_gitanddir(runner):
+    r = runner
+    r.login()
+    r.runcommand("gin", "create", "--here", r.reponame, "Multi-remote test")
+    r.repositories[r.cmdloc] = r.reponame
+
+    here = f"{r.username}@{socket.gethostname()}"
+
+    # add a directory remote
+    fsremotedir = os.path.join(r.testroot.name, "annexdata")
+    out, err = r.runcommand("gin", "add-remote", "--create",
+                            "datastore", f"dir:{fsremotedir}")
+    r.repositories[fsremotedir] = None
+    assert "Default remote: origin" in out
+
+    out, err = r.runcommand("gin", "git", "config", "--get", "gin.remote")
+    assert out.strip() == "origin"
+
+    ngit = 5
+    nannex = 3
+
+    contentlocs = dict()
+    for idx in range(ngit):
+        fname = f"gitfile{idx}"
+        util.mkrandfile(fname, 3)
+    for idx in range(nannex):
+        fname = f"annexfile{idx}"
+        util.mkrandfile(fname, 900)
+        contentlocs[fname] = list()
+
+    r.runcommand("gin", "upload", "gitfile*")
+    assert_locations(r, contentlocs)
+
+    def revcountremote(remote):
+        n, _ = r.runcommand("git", "rev-list", "--count",
+                            f"{remote}/master", "--")
+        return int(n)
+
+    # commits are always pushed to all remotes
+    assert revcountremote("origin") == revcountremote("datastore") == 2
+
+    r.runcommand("gin", "upload", "annexfile*")
+    for fname in contentlocs:
+        if "annexfile" in fname:
+            contentlocs[fname].extend(["origin", here])
+    assert_locations(r, contentlocs)
+    assert revcountremote("origin") == revcountremote("datastore") == 3
+
+    # upload annexfile0 to datastore
+    r.runcommand("gin", "upload", "--to", "datastore", "annexfile0")
+    contentlocs["annexfile0"].append("GIN Storage [datastore]")
+    assert_locations(r, contentlocs)
+
+    # upload everything to datastore
+    r.runcommand("gin", "upload", "--to", "datastore")
+    for fname, locs in contentlocs.items():
+        if "GIN Storage [datastore]" not in locs:
+            contentlocs[fname].append("GIN Storage [datastore]")
+    assert_locations(r, contentlocs)
+    assert revcountremote("origin") == revcountremote("datastore") == 3
+
+    util.mkrandfile("another annex file", 1000)
+    r.runcommand("gin", "upload", "--to", "datastore", "another annex file")
+    contentlocs["another annex file"] = ["GIN Storage [datastore]", here]
+    assert_locations(r, contentlocs)
+    assert revcountremote("origin") == revcountremote("datastore") == 4
+
+    # add another directory remote
+    fsremotedir = os.path.join(r.testroot.name, "annexdata-two")
+    out, err = r.runcommand("gin", "add-remote", "--create",
+                            "lanstore", f"dir:{fsremotedir}")
+    r.repositories[fsremotedir] = None
+    assert "Default remote: origin" in out
+
+    for idx in range(5):
+        fname = f"moredata{idx}"
+        contentlocs[fname] = list()
+        util.mkrandfile(fname, 1000)
+
+    # commit only
+    r.runcommand("gin", "commit", "moredata*")
+    for fname in contentlocs:
+        if "moredata" in fname:
+            contentlocs[fname].append(here)
+    assert_locations(r, contentlocs)
+
+    # upload only to non-gin remotes
+    r.runcommand("gin", "upload", "--to", "datastore", "--to", "lanstore",
+                 "moredata*")
+    assert (revcountremote("origin") == revcountremote("datastore")
+            == revcountremote("lanstore") == 5)
+    newlocs = ["GIN Storage [datastore]", "GIN Storage [lanstore]"]
+    for fname in contentlocs:
+        if "moredata" in fname:
+            contentlocs[fname].extend(newlocs)
+    assert_locations(r, contentlocs)
+
+    # change default to datastore
+
+    # upload everywhere

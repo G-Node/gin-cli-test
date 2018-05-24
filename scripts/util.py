@@ -24,8 +24,7 @@ def getrevcount(r):
     """
     Total number of revisions from HEAD.
     """
-    n, _ = r.runcommand("git", "rev-list", "--count", "HEAD",
-                               echo=False)
+    n, _ = r.runcommand("git", "rev-list", "--count", "HEAD", echo=False)
     return int(n)
 
 
