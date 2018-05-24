@@ -15,6 +15,7 @@ class Runner(object):
         self.env["GIN_LOG_DIR"] = os.path.join(self.loc, "log")
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name
+        self.repositories = dict()
         os.chdir(self.cmdloc)
 
     def runcommand(self, *args, inp=None, exit=True, echo=True):
@@ -54,10 +55,27 @@ class Runner(object):
         self.username = username
         return self.runcommand("gin", "login", username, inp=password)
 
-    def cleanup(self, repo):
-        repopath = f"{self.username}/{repo}"
-        self.runcommand("gin", "annex", "uninit", exit=False)
-        self.runcommand("gin", "delete", repopath, inp=repopath)
+    def cleanup(self):
+        def runsilent(*args):
+            self.runcommand(*args, exit=False, echo=False)
+        loc = self.cmdloc
+        for location, repo in self.repositories.items():
+            print(f"Cleaning up {location} ({repo})")
+            self.cmdloc = location
+            runsilent("gin", "annex", "unused")
+            runsilent("gin", "annex", "dropunused")
+            runsilent("gin", "annex", "uninit")
+            # bare repos don't uninit properly and keep data behind
+            # changing permissions for cleanup
+            for root, dirs, files in os.walk(location):
+                for d in dirs:
+                    os.chmod(os.path.join(root, d), 0o770)
+                for f in files:
+                    os.chmod(os.path.join(root, f), 0o770)
+            if repo:
+                repopath = f"{self.username}/{repo}"
+                self.runcommand("gin", "delete", repopath, inp=repopath)
+        self.cmdloc = loc
 
     def logout(self):
-        self.runcommand("gin", "logout")
+        self.runcommand("gin", "logout", exit=False, echo=False)
