@@ -481,5 +481,29 @@ def test_multiple_remotes_gitanddir(runner):
     assert_locations(r, contentlocs)
 
     # change default to datastore
+    out, err = r.runcommand("gin", "use-remote")
+    assert out.strip() == ":: Default remote: origin"
+    out, err = r.runcommand("gin", "remotes")
+    outlines = out.splitlines()
+    assert len(outlines) == 4
+    for line in outlines:
+        if "origin" in line:
+            assert "[default]" in line
 
-    # upload everywhere
+    r.runcommand("gin", "use-remote", "datastore")
+    out, err = r.runcommand("gin", "use-remote")
+    assert out.strip() == ":: Default remote: datastore"
+
+    dsfname = "send-me-to-the-datastore"
+    util.mkrandfile(dsfname, 1024)
+    r.runcommand("gin", "upload", dsfname)
+    contentlocs[dsfname] = [here, "GIN Storage [datastore]"]
+    assert_locations(r, contentlocs)
+
+    # upload everything everywhere
+    r.runcommand("gin", "upload", "--to", "all", ".")
+    allremotes = [here, "origin",
+                  "GIN Storage [datastore]", "GIN Storage [lanstore]"]
+    for fname in contentlocs:
+        contentlocs[fname] = allremotes
+    assert_locations(r, contentlocs)
