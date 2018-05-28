@@ -507,3 +507,94 @@ def test_multiple_remotes_gitanddir(runner):
     for fname in contentlocs:
         contentlocs[fname] = allremotes
     assert_locations(r, contentlocs)
+
+
+def test_remote_unavailable(runner):
+    r = runner
+    r.login()
+    r.runcommand("gin", "create", "--here", r.reponame,
+                 "Multi-remote + unavailable test")
+    r.repositories[r.cmdloc] = r.reponame
+
+    here = f"{r.username}@{socket.gethostname()}"
+
+    # add a directory remote
+    datastoredir = os.path.join(r.testroot.name, "annexdata")
+    out, err = r.runcommand("gin", "add-remote", "--create",
+                            "datastore", f"dir:{datastoredir}")
+    datastore = "GIN Storage [datastore]"
+    r.repositories[datastoredir] = None
+    # add another directory remote
+    lanstoredir = os.path.join(r.testroot.name, "annexdata-two")
+    out, err = r.runcommand("gin", "add-remote", "--create",
+                            "lanstore", f"dir:{lanstoredir}")
+    lanstore = "GIN Storage [lanstore]"
+    r.repositories[lanstoredir] = None
+    assert "Default remote: origin" in out
+
+    out, err = r.runcommand("gin", "git", "config", "--get", "gin.remote")
+    assert out.strip() == "origin"
+
+    ngit = 5
+    nannex = 4
+
+    contentlocs = dict()
+    for idx in range(ngit):
+        fname = f"gitfile{idx}"
+        util.mkrandfile(fname, 3)
+    for idx in range(nannex):
+        fname = f"annexfile{idx}"
+        util.mkrandfile(fname, 900)
+        contentlocs[fname] = list()
+
+    r.runcommand("gin", "upload", "gitfile*")
+    assert_locations(r, contentlocs)
+
+    def revcountremote(remote):
+        n, _ = r.runcommand("git", "rev-list", "--count",
+                            f"{remote}/master", "--")
+        return int(n)
+
+    # commits are always pushed to all remotes
+    assert revcountremote("origin") == revcountremote("datastore") == 2
+
+    r.runcommand("gin", "upload", "--to=all", "annexfile*")
+    for fname in contentlocs:
+        if "annexfile" in fname:
+            contentlocs[fname].extend(["origin", here, datastore, lanstore])
+    assert_locations(r, contentlocs)
+    assert revcountremote("origin") == revcountremote("datastore") == 3
+
+    # make lanstore inaccessible by renaming the path temporarily
+    lanstoreunavaildir = f"{lanstoredir}-moved"
+    print(f"Renaming {lanstoredir} to {lanstoreunavaildir}")
+    os.rename(lanstoredir, lanstoreunavaildir)
+
+    # add a few more annex files
+    for idx in range(2):
+        fname = f"newannexfile{idx}"
+        util.mkrandfile(fname, 900)
+        contentlocs[fname] = list()
+
+    r.runcommand("gin", "commit", "newannexfile*")
+    for fname in contentlocs:
+        if fname.startswith("newannexfile"):
+            contentlocs[fname].append(here)
+    assert_locations(r, contentlocs)
+
+    r.runcommand("gin", "upload", "--to=all", exit=False)
+    for fname in contentlocs:
+        if fname.startswith("newannexfile"):
+            contentlocs[fname].extend(("origin", datastore))
+    assert_locations(r, contentlocs)
+
+    print(f"Renaming {lanstoreunavaildir} to {lanstoredir}")
+    os.rename(lanstoreunavaildir, lanstoredir)
+    assert_locations(r, contentlocs)
+
+    # upload again
+    r.runcommand("gin", "upload", "--to=all", exit=False)
+    for fname in contentlocs:
+        if fname.startswith("newannexfile"):
+            contentlocs[fname].append(lanstore)
+    assert_locations(r, contentlocs)
