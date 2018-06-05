@@ -1,5 +1,6 @@
 import os
 import shutil
+import yaml
 from random import randint
 from runner import Runner
 import util
@@ -131,11 +132,13 @@ def test_errors(runner):
     badconfdir = os.path.join(badconftemp.name, "conf")
     r.env["GIN_CONFIG_DIR"] = badconfdir
     shutil.copytree(goodconfdir, badconfdir)
+    with open(os.path.join(goodconfdir, "config.yml")) as conffile:
+        confdata = yaml.load(conffile.read())
 
-    weburl = "http://gintestserver:1"
-    giturl = "git@gintestserver:1"
-    r.runcommand("gin", "add-server", "gin",
-                 f"--web={weburl}", f"--git={giturl}")
+    confdata["servers"]["gin"]["web"]["port"] = 1
+    confdata["servers"]["gin"]["git"]["port"] = 1
+    with open(os.path.join(badconfdir, "config.yml"), "w") as conffile:
+        conffile.write(yaml.dump(confdata))
     out, err = r.runcommand("gin", "create", "ThisShouldFail", exit=False)
     assert err, "Expected error, got nothing"
     errmsg = "[error] server refused connection"
