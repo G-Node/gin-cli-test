@@ -3,8 +3,7 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-set -xeu
-
 docker exec gintestserver rm -rfv /data/ssh /data/gogs-repositories
-docker kill gintestserver
+docker exec gintestserverb rm -rfv /data/ssh /data/gogs-repositories
+docker kill gintestserver gintestserverb
 docker network rm ginbridge
