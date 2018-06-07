@@ -7,6 +7,7 @@ import tempfile
 class Runner(object):
 
     username = "testuser"
+    password = "a test password 42"
 
     def __init__(self):
         self.loc = os.path.dirname(os.path.abspath(__file__))
@@ -51,8 +52,9 @@ class Runner(object):
         os.chdir(self.cmdloc)
         print(f"New dir: {self.cmdloc}")
 
-    def login(self, username=username, password="a test password 42"):
+    def login(self, username=username, password=password):
         self.username = username
+        self.password = password
         return self.runcommand("gin", "login", username, inp=password)
 
     def cleanup(self):
