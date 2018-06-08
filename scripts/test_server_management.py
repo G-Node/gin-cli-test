@@ -61,12 +61,18 @@ def test_use_server_create_repo(runner):
 
     out, err = r.runcommand("gin", "repos", "--json", echo=False)
     repos = json.loads(out)
-    # find repo_srva
+    # find repo_srvb
     for repo in repos:
         if repo["name"] == repo_srvb:
             break
     else:
         assert False, "Unable to find repository on server"
+
+    # request repo_srvb explicitly
+    out, err = r.runcommand("gin", "repoinfo", "--json",
+                            f"{r.username}/{repo_srvb}", echo=False)
+    repoinfo = json.loads(out)
+    assert repoinfo["name"] == repo_srvb
 
     # change server, check repos
     r.runcommand("gin", "use-server", "srva")
@@ -114,6 +120,8 @@ def test_flag_server_create_repo(runner):
     r.runcommand(*srva, inp="yes")
     r.runcommand(*srvb, inp="yes")
 
+    r.runcommand("gin", "servers")
+
     repo_srva = util.randrepo()
     repo_srvb = util.randrepo()
 
@@ -142,12 +150,18 @@ def test_flag_server_create_repo(runner):
     out, err = r.runcommand("gin", "repos", "--server", "srvb",
                             "--json", echo=False)
     repos = json.loads(out)
-    # find repo_srva
+    # find repo_srvb
     for repo in repos:
         if repo["name"] == repo_srvb:
             break
     else:
         assert False, "Unable to find repository on server"
+
+    # request repo_srvb explicitly
+    out, err = r.runcommand("gin", "repoinfo", "--json", "--server", "srvb",
+                            f"{r.username}/{repo_srvb}", echo=False)
+    repoinfo = json.loads(out)
+    assert repoinfo["name"] == repo_srvb
 
     r.runcommand("gin", "login", "--server", "srva",
                  r.username, inp=r.password)
