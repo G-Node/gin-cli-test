@@ -181,7 +181,7 @@ def test_errors(runner):
     r.login()
 
     # set bad host key and check error
-    with open(os.path.join(goodconfdir, "gin.hostkey"), "r+") as hostkeyfile:
+    with open(os.path.join(goodconfdir, "known_hosts"), "r+") as hostkeyfile:
         goodhostkey = hostkeyfile.read()
         badhostkey = goodhostkey.replace("AAA", "BBB")
         hostkeyfile.seek(0)
