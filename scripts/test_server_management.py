@@ -23,10 +23,9 @@ def runner():
 
     # cleanup
     r.cleanup()
-    r.logout()
 
 
-def test_default_server_create_repo(runner):
+def test_use_server_create_repo(runner):
     r = runner
 
     r.runcommand(*srva, inp="yes")
@@ -43,6 +42,11 @@ def test_default_server_create_repo(runner):
         r.runcommand("gin", "use-server", "srvb")
         repopath = f"{r.username}/{repo_srvb}"
         r.runcommand("gin", "delete", repopath, inp=repopath)
+
+        r.runcommand("gin", "use-server", "srva")
+        r.runcommand("gin", "logout")
+        r.runcommand("gin", "use-server", "srvb")
+        r.runcommand("gin", "logout")
 
         r.runcommand("gin", "remove-server", "srva")
         r.runcommand("gin", "rm-server", "srvb")
@@ -117,10 +121,12 @@ def test_flag_server_create_repo(runner):
         repopath = f"{r.username}/{repo_srva}"
         r.runcommand("gin", "delete", "--server=srva",
                      repopath, inp=repopath)
+        r.runcommand("gin", "logout", "--server", "srva")
 
         repopath = f"{r.username}/{repo_srvb}"
         r.runcommand("gin", "delete", "--server", "srvb",
                      repopath, inp=repopath)
+        r.runcommand("gin", "logout", "--server", "srvb")
 
         r.runcommand("gin", "remove-server", "srva")
         r.runcommand("gin", "rm-server", "srvb")
