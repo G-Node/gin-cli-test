@@ -130,8 +130,8 @@ def test_flag_server_create_repo(runner):
     r.runcommand("gin", "login", "--server", "srvb",
                  r.username, inp=r.password)
 
-    r.runcommand("gin", "create", repo_srvb,
-                 "Test multiple servers (switching default)")
+    r.runcommand("gin", "create", "--server", "srvb", repo_srvb,
+                 "Test multiple servers (server flag)")
 
     out, err = r.runcommand("gin", "repos", "--server", "srvb",
                             "--json", echo=False)
@@ -154,7 +154,7 @@ def test_flag_server_create_repo(runner):
             assert repo["name"] != repo_srvb
 
     r.runcommand("gin", "create", "--server", "srva", repo_srva,
-                 "Test multiple servers (switching default)")
+                 "Test multiple servers (server flag)")
 
     # TODO: Change when we get --json output for the server listing
     out, err = r.runcommand("gin", "servers")
