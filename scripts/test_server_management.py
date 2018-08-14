@@ -14,6 +14,12 @@ srvb = ("gin", "add-server",
         "--git", "git@gintestserverb:22",
         "srvb")
 
+inpforma = ("http", "gintestserver", "3000",
+            "git", "gintestserver", "22", "yes")
+
+inpformb = ("http", "gintestserverb", "3000",
+            "git", "gintestserverb", "22", "yes")
+
 
 @pytest.fixture
 def runner():
@@ -23,6 +29,45 @@ def runner():
 
     # cleanup
     r.cleanup()
+
+
+def test_add_server_prompt(runner):
+    r = runner
+    r.runcommand("gin", "add-server", "srva", inp="\n".join(inpforma))
+    r.runcommand("gin", "add-server", "srvb", inp="\n".join(inpformb))
+
+    repo_srva = util.randrepo()
+    repo_srvb = util.randrepo()
+
+    def cleanup():
+        r.runcommand("gin", "use-server", "srva")
+        repopath = f"{r.username}/{repo_srva}"
+        r.runcommand("gin", "delete", repopath, inp=repopath)
+
+        r.runcommand("gin", "use-server", "srvb")
+        repopath = f"{r.username}/{repo_srvb}"
+        r.runcommand("gin", "delete", repopath, inp=repopath)
+
+        r.runcommand("gin", "use-server", "srva")
+        r.runcommand("gin", "logout")
+        r.runcommand("gin", "use-server", "srvb")
+        r.runcommand("gin", "logout")
+
+        r.runcommand("gin", "remove-server", "srva")
+        r.runcommand("gin", "rm-server", "srvb")
+
+    r.cleanup = cleanup
+
+    r.runcommand("gin", "use-server", "srvb")
+    r.login()
+
+    r.runcommand("gin", "create", repo_srvb,
+                 "Test multiple servers")
+
+    r.runcommand("gin", "use-server", "srva")
+    r.login()
+    r.runcommand("gin", "create", repo_srva,
+                 "Test multiple servers")
 
 
 def test_use_server_create_repo(runner):
