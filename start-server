@@ -8,13 +8,13 @@ set -xeu
 docker pull gnode/ginhome
 
 # copy init server data to live location
-srvdata="/tmp/gin-data-${RANDOM}"
+srvdata="/tmp/gin-data-$(date +%s)-a"
 cp -a "./gin-data.init/." "${srvdata}"
 
 docker network create -d bridge ginbridge || true  # don't fail if bridge already exists
 docker run --rm --network=ginbridge -v "${srvdata}":/data -p 3000:3000 -p 2222:22 --name gintestserver -d gnode/ginhome
 
 # Second server
-srvdatab="/tmp/gin-data-${RANDOM}"
+srvdatab="/tmp/gin-data-$(date +%s)-b"
 cp -a "./gin-data.init/." "${srvdatab}"
 docker run --rm --network=ginbridge -v "${srvdatab}":/data -p 4000:3000 -p 2424:22 --name gintestserverb -d gnode/ginhome
