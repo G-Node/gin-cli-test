@@ -11,4 +11,4 @@ source ./scripts/setenv.sh
 mkdir -p ${GIN_LOG_DIR}
 testlog=${GIN_LOG_DIR}/tests.log
 echo "Running tests and logging to ${testlog}"
-docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --name gintestclientmv ginclitestsmv 2>&1 | tee ${testlog}
+docker run --rm --network=ginbridge -v "${loc}/testuserhome":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" --name gintestclientmv ginclitestsmv 2>&1 | tee ${testlog}
