@@ -98,8 +98,8 @@ def test_download_over_modified(runner):
     print(f"{locb.cmdloc} commit: {util.getrevcount(locb)}")
     out, err = locb.runcommand("gin", "download", exit=False)
     assert err, "Expected error, got nothing"
-    expmsg = ("download failed: local modified or untracked file would be "
+    expmsg = ("download failed: local modified or untracked files would be "
               "overwritten by download")
-    assert err.endswith(expmsg)
-
+    assert expmsg in err
+    assert err.endswith(pullconflict)
     print("Done!")
