@@ -6,5 +6,5 @@ then
 else
     ncarg=""
 fi
-docker build ${ncarg} ginclibase -t achkts/gin-cli-deps
-docker push achkts/gin-cli-deps
+docker build ${ncarg} ginclibase -t gnode/gin-cli-deps
+docker push gnode/gin-cli-deps
