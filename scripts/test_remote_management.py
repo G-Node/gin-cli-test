@@ -401,6 +401,9 @@ def test_multiple_remotes_gitanddir(runner):
     out, err = r.runcommand("gin", "git", "config", "--get", "gin.remote")
     assert out.strip() == "origin"
 
+    # upload to initialise datastore remote
+    r.runcommand("gin", "upload", "--to=datastore")
+
     ngit = 5
     nannex = 3
 
@@ -421,15 +424,17 @@ def test_multiple_remotes_gitanddir(runner):
                             f"{remote}/master", "--")
         return int(n)
 
-    # commits are always pushed to all remotes
-    assert revcountremote("origin") == revcountremote("datastore") == 2
+    # commits are no longer pushed to all remotes
+    assert revcountremote("origin") == 2
+    assert revcountremote("datastore") == 1
 
     r.runcommand("gin", "upload", "annexfile*")
     for fname in contentlocs:
         if "annexfile" in fname:
             contentlocs[fname].extend(["origin", here])
     assert_locations(r, contentlocs)
-    assert revcountremote("origin") == revcountremote("datastore") == 3
+    assert revcountremote("origin") == 3
+    assert revcountremote("datastore") == 1
 
     # upload annexfile0 to datastore
     r.runcommand("gin", "upload", "--to", "datastore", "annexfile0")
@@ -448,7 +453,8 @@ def test_multiple_remotes_gitanddir(runner):
     r.runcommand("gin", "upload", "--to", "datastore", "another annex file")
     contentlocs["another annex file"] = ["GIN Storage [datastore]", here]
     assert_locations(r, contentlocs)
-    assert revcountremote("origin") == revcountremote("datastore") == 4
+    assert revcountremote("origin") == 3
+    assert revcountremote("datastore") == 4
 
     # add another directory remote
     fsremotedir = os.path.join(r.testroot.name, "annexdata-two")
@@ -472,8 +478,8 @@ def test_multiple_remotes_gitanddir(runner):
     # upload only to non-gin remotes
     r.runcommand("gin", "upload", "--to", "datastore", "--to", "lanstore",
                  "moredata*")
-    assert (revcountremote("origin") == revcountremote("datastore")
-            == revcountremote("lanstore") == 5)
+    assert revcountremote("origin") == 3
+    assert revcountremote("datastore") == revcountremote("lanstore") == 5
     newlocs = ["GIN Storage [datastore]", "GIN Storage [lanstore]"]
     for fname in contentlocs:
         if "moredata" in fname:
@@ -555,8 +561,8 @@ def test_remote_unavailable(runner):
                             f"{remote}/master", "--")
         return int(n)
 
-    # commits are always pushed to all remotes
-    assert revcountremote("origin") == revcountremote("datastore") == 2
+    # commits are no longer pushed to all remotes
+    assert revcountremote("origin") == 2
 
     r.runcommand("gin", "upload", "--to=all", "annexfile*")
     for fname in contentlocs:
