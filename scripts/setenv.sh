@@ -11,8 +11,8 @@ mkannexfile() {
 }
 
 testroot=${scriptsloc}/..
-export GIN_CONFIG_DIR=${testroot}/testuserhome/conf
-export GIN_LOG_DIR=${testroot}/testuserhome/log
+export GIN_CONFIG_DIR=${testroot}/conf
+export GIN_LOG_DIR=${testroot}/log
 
 username=testuser
 password="a test password 42"

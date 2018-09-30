@@ -8,7 +8,7 @@ pushd $loc
 
 echo "****** Running ${BASH_SOURCE[0]} ******"
 
-set -eu
+set -euo pipefail
 source ./setenv.sh
 
 testroot="/tmp/gintest"
