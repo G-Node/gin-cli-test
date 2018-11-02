@@ -1,6 +1,4 @@
 import os
-import shutil
-from glob import glob
 from runner import Runner
 import util
 import pytest
@@ -29,13 +27,13 @@ def test_workflow(runner):
 
     # create files in root
     gitfiles = list()
-    for idx in range(2):
+    for idx in range(8):
         fname = f"root-{idx}.git"
         util.mkrandfile(fname, 5)
         gitfiles.append(fname)
 
     annexfiles = list()
-    for idx in range(3):
+    for idx in range(5):
         fname = f"root-{idx}.annex"
         annexfiles.append(fname)
         util.mkrandfile(fname, 2000)
@@ -46,7 +44,16 @@ def test_workflow(runner):
     # delete a git file and "upload" it
     os.unlink(gitfiles[-1])
     r.runcommand("gin", "upload", gitfiles[-1])
+    gitfiles = gitfiles[:-1]
 
     # delete an annex file and "upload" it
     os.unlink(annexfiles[-1])
     r.runcommand("gin", "upload", annexfiles[-1])
+    annexfiles = annexfiles[:-1]
+
+    # delete everything and upload, naming all deleted files
+    allfiles = gitfiles + annexfiles
+    for fn in allfiles:
+        os.unlink(fn)
+
+    r.runcommand("gin", "upload", *allfiles)
