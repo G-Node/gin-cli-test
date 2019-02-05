@@ -62,13 +62,23 @@ def test_download_over_modified(runner):
     expmsg = ("upload failed: changes were made on the server that have not "
               "been downloaded; run 'gin download' to update local copies")
 
-    # A PUSH, B PUSH BEFORE PULL
+    # A PUSH, B PUSH BEFORE PULL (git)
     loca.cdrel()
-    util.mkrandfile("newfile", 10)
+    util.mkrandfile("newfile.git", 1)
     loca.runcommand("gin", "upload", "newfile")
     locb.cdrel()
-    util.mkrandfile("newfile-b", 30)
-    out, err = locb.runcommand("gin", "upload", "newfile-b", exit=False)
+    util.mkrandfile("newfile-b.git", 1)
+    out, err = locb.runcommand("gin", "upload", "newfile-b.git", exit=False)
+    assert err, "Expected error, got nothing"
+    assert out.endswith(expmsg)
+
+    # A PUSH, B PUSH BEFORE PULL (annex)
+    loca.cdrel()
+    util.mkrandfile("newfile.annex", 10)
+    loca.runcommand("gin", "upload", "newfile")
+    locb.cdrel()
+    util.mkrandfile("newfile-b.annex", 30)
+    out, err = locb.runcommand("gin", "upload", "newfile-b.annex", exit=False)
     assert err, "Expected error, got nothing"
     assert out.endswith(expmsg)
 
