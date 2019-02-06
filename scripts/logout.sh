@@ -3,7 +3,7 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-set -eu
+set -euo pipefail
 source ./setenv.sh
 
 gin logout

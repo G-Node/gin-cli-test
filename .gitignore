@@ -15,6 +15,4 @@ token
 *cache*
 
 bin/
-testuserhome/
-
-scripts/conf/
+conf/

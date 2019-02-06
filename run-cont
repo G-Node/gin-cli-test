@@ -7,14 +7,14 @@
 
 cmd=$*
 
-set -eu
+set -euo pipefail
 
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 source ${loc}/scripts/setenv.sh
 
 docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
-docker run --rm --network=ginbridge -v "${testuserhome}":/home/ginuser -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
+docker run --rm --network=ginbridge -v "${GIN_CONFIG_DIR}":/home/ginuser/conf -v "${GIN_LOG_DIR}":/home/ginuser/log -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
 
 set +e
 docker exec -i gintestclient $cmd

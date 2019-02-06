@@ -10,9 +10,8 @@ mkannexfile() {
     dd if=/dev/urandom of=$1 bs=100k count=1
 }
 
-export testuserhome=$(cd ${scriptsloc}/../testuserhome && pwd)
-export GIN_CONFIG_DIR=${testuserhome}/conf
-export GIN_LOG_DIR=${testuserhome}/log
+export GIN_CONFIG_DIR=$(realpath "${scriptsloc}/../conf")
+export GIN_LOG_DIR=$(realpath "${scriptsloc}/../log")
 
 username=testuser
 password="a test password 42"

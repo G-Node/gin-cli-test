@@ -11,6 +11,15 @@ set -euo pipefail
 
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
+source ${loc}/scripts/setenv.sh
 
-docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
-docker run --rm --network=ginbridge -v "${loc}/conf":/home/ginuser/conf -v "${loc}/log":/home/ginuser/log -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" --name gintestclient --entrypoint="/usr/bin/bash" -it ginclitests
+docker build --build-arg UID=${UID} -t ginclitestsmv dockerfiles/testerminver
+docker run --rm --network=ginbridge -v "${GIN_CONFIG_DIR}":/home/ginuser/conf -v "${GIN_LOG_DIR}":/home/ginuser/log -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" -i --name gintestclientmv --entrypoint="/bin/bash" -d ginclitestsmv
+
+set +e
+docker exec -i gintestclientmv $cmd
+cmdstat=$?
+
+docker kill gintestclientmv
+
+exit ${cmdstat}
