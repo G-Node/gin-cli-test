@@ -4,6 +4,14 @@ import util
 import pytest
 
 
+uperrmsg = ("upload failed: changes were made on the server that have not "
+            "been downloaded; run 'gin download' to update local copies")
+owerrmsg = ("download failed: local modified or untracked files would be "
+            "overwritten by download")
+cferrmsg = ("download failed: files changed locally and remotely "
+            "and cannot be automatically merged (merge conflict)")
+
+
 @pytest.fixture
 def runner():
     # Use 2 runner instances to checkout two clones and create merge conflicts
@@ -33,36 +41,113 @@ def runner():
     locb.runcommand("git", "annex", "uninit")
 
 
-def test_download_over_modified(runner):
+def test_download_over_untracked(runner):
     loca, locb = runner
-    # create files in root (loca)
+
+    # DOWNLOAD FILE THAT EXISTS LOCALLY (UNTRACKED)
+    fname = "pull-conflict.annex"
     loca.cdrel()
-    for idx in range(5):
-        util.mkrandfile(f"root-{idx}.git", 1)
-    for idx in range(3):
-        util.mkrandfile(f"root-{idx}.annex", 100)
+    util.mkrandfile(fname, 100)
+    loca.runcommand("gin", "upload", fname)
 
-    # Create some subdirectories with files (loca)
-    for idx in "abcdef":
-        dirname = f"subdir-{idx}"
-        os.mkdir(dirname)
-        loca.cdrel(dirname)
-        for jdx in range(2):
-            util.mkrandfile(f"subfile-{jdx}.annex", 200)
-        loca.cdrel("..")
+    locb.cdrel()
+    util.mkrandfile(fname, 50)
 
-    # upload should do nothing
-    out, err = loca.runcommand("gin", "upload", ".")
+    # print(f"{loca.cmdloc} commit: {util.getrevcount(loca)}")
+    # print(f"{locb.cmdloc} commit: {util.getrevcount(locb)}")
+    out, err = locb.runcommand("gin", "download", exit=False)
+    assert err, "Expected error, got nothing"
+    assert owerrmsg in err
+    assert err.endswith(fname)
 
-    loca.runcommand("gin", "download")
-    loca.runcommand("gin", "upload", ".")
 
+def test_download_over_modified_git(runner):
+    loca, locb = runner
+
+    # DOWNLOAD FILE THAT IS UNTRACKED LOCALLY (COMMITTED)
+    fname = "pull-conflict.git"
+    loca.cdrel()
+    util.mkrandfile(fname, 10)
+    loca.runcommand("gin", "upload", fname)
+
+    locb.cdrel()
     locb.runcommand("gin", "download")
 
-    expmsg = ("upload failed: changes were made on the server that have not "
-              "been downloaded; run 'gin download' to update local copies")
+    loca.cdrel()
+    util.mkrandfile(fname, 10)  # modify existing file in A
+    loca.runcommand("gin", "upload", fname)
 
-    # # A PUSH, B PUSH BEFORE PULL (git)
+    locb.cdrel()
+    util.mkrandfile(fname, 15)  # modify existing file in B
+    out, err = locb.runcommand("gin", "download", exit=False)
+    assert err, "Expected error, got nothing"
+    assert owerrmsg in err
+    assert err.endswith(fname)
+
+
+def test_download_over_modified_annex(runner):
+    loca, locb = runner
+
+    # DOWNLOAD FILE THAT IS UNTRACKED LOCALLY (COMMITTED)
+    fname = "pull-conflict.annex"
+    loca.cdrel()
+    util.mkrandfile(fname, 200)
+    loca.runcommand("gin", "upload", fname)
+
+    locb.cdrel()
+    locb.runcommand("gin", "download", "--content")
+
+    loca.cdrel()
+    loca.runcommand("gin", "unlock", fname)
+    util.mkrandfile(fname, 300)  # modify existing file in A
+    loca.runcommand("gin", "upload", fname)
+
+    locb.cdrel()
+    locb.runcommand("gin", "unlock", fname)
+    util.mkrandfile(fname, 150)  # modify existing file in B
+    out, err = locb.runcommand("gin", "download", exit=False)
+    assert err, "Expected error, got nothing"
+    assert owerrmsg in err
+    assert err.endswith(fname)
+
+
+def test_download_over_modified_text(runner):
+    loca, locb = runner
+
+    # DOWNLOAD TEXT FILE MERGE CONFLICT
+    loca.cdrel()
+    fname = "mergeconflict.git"
+    with open(fname) as txtfile:
+        txtfile.write("I AM A")
+    loca.runcommand("gin", "upload", fname)
+
+    out, err = locb.runcommand("gin", "download", exit=False)
+    print(out)
+    print(err)
+    assert err, "Expected error, got nothing"
+    assert out.endswith(cferrmsg)
+
+
+def test_upload_conflict_text(runner):
+    loca, locb = runner
+
+    # A PUSH, B PUSH BEFORE PULL (git simple text file)
+    loca.cdrel()
+    with open("textfile", "w") as txtfile:
+        txtfile.write("I AM A")
+    loca.runcommand("gin", "upload", "textfile")
+    locb.cdrel()
+    with open("textfile", "w") as txtfile:
+        txtfile.write("I AM B")
+    out, err = locb.runcommand("gin", "upload", "textfile", exit=False)
+    assert err, "Expected error, got nothing"
+    assert out.endswith(uperrmsg)
+
+
+def test_upload_conflict_git(runner):
+    loca, locb = runner
+
+    # A PUSH, B PUSH BEFORE PULL (git)
     loca.cdrel()
     util.mkrandfile("newfile.git", 1)
     loca.runcommand("gin", "upload", "newfile.git")
@@ -70,7 +155,11 @@ def test_download_over_modified(runner):
     util.mkrandfile("newfile-b.git", 1)
     out, err = locb.runcommand("gin", "upload", "newfile-b.git", exit=False)
     assert err, "Expected error, got nothing"
-    assert out.endswith(expmsg)
+    assert out.endswith(uperrmsg)
+
+
+def test_upload_conflict_annex(runner):
+    loca, locb = runner
 
     # A PUSH, B PUSH BEFORE PULL (annex)
     loca.cdrel()
@@ -80,36 +169,23 @@ def test_download_over_modified(runner):
     util.mkrandfile("newfile-b.annex", 30)
     out, err = locb.runcommand("gin", "upload", "newfile-b.annex", exit=False)
     assert err, "Expected error, got nothing"
-    assert out.endswith(expmsg)
+    assert out.endswith(uperrmsg)
+
+
+def test_upload_conflict_samefile(runner):
+    loca, locb = runner
 
     # A PUSH, B PUSH SAME NAME FILE
-    pushconflict = "push-conflict.annex"
+    fname = "push-conflict.annex"
     loca.cdrel()
-    util.mkrandfile(pushconflict, 100)
+    util.mkrandfile(fname, 100)
 
     locb.cdrel()
-    util.mkrandfile(pushconflict, 100)
+    util.mkrandfile(fname, 100)
 
-    loca.runcommand("gin", "upload", pushconflict)
-    out, err = locb.runcommand("gin", "upload", pushconflict, exit=False)
+    loca.runcommand("gin", "upload", fname)
+    out, err = locb.runcommand("gin", "upload", fname, exit=False)
     assert err, "Expected error, got nothing"
-    assert out.endswith(expmsg)
+    assert out.endswith(uperrmsg)
 
-    # DOWNLOAD FILE THAT EXISTS LOCALLY
-    pullconflict = "pull-conflict.annex"
-    loca.cdrel()
-    util.mkrandfile(pullconflict, 100)
-    loca.runcommand("gin", "upload", pullconflict)
-
-    locb.cdrel()
-    util.mkrandfile(pullconflict, 50)
-
-    print(f"{loca.cmdloc} commit: {util.getrevcount(loca)}")
-    print(f"{locb.cmdloc} commit: {util.getrevcount(locb)}")
-    out, err = locb.runcommand("gin", "download", exit=False)
-    assert err, "Expected error, got nothing"
-    expmsg = ("download failed: local modified or untracked files would be "
-              "overwritten by download")
-    assert expmsg in err
-    assert err.endswith(pullconflict)
     print("Done!")
