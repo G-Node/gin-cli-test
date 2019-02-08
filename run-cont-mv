@@ -16,10 +16,7 @@ source ${loc}/scripts/setenv.sh
 docker build --build-arg UID=${UID} -t ginclitestsmv dockerfiles/testerminver
 docker run --rm --network=ginbridge -v "${GIN_CONFIG_DIR}":/home/ginuser/conf -v "${GIN_LOG_DIR}":/home/ginuser/log -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" -i --name gintestclientmv --entrypoint="/bin/bash" -d ginclitestsmv
 
-set +e
+# kill container on exit
+trap 'docker kill gintestclientmv' EXIT
+
 docker exec -i gintestclientmv $cmd
-cmdstat=$?
-
-docker kill gintestclientmv
-
-exit ${cmdstat}
