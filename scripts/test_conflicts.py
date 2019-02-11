@@ -1,3 +1,4 @@
+import os
 from runner import Runner
 import util
 import pytest
@@ -56,6 +57,11 @@ def _untracked_conflict(runner, size):
     assert owerrmsg in err
     assert err.endswith(fname)
 
+    # resolution: rename untracked file and download
+    locb.cdrel()
+    os.rename(fname, fname+".bak")
+    locb.runcommand("gin", "download")
+
 
 def test_download_git_over_untracked(runner):
     _untracked_conflict(runner, 10)
@@ -70,21 +76,31 @@ def _tracked_conflict(runner, sizea, sizeb):
 
     # if a file involved in a pull conflict is in the annex, it will get
     # renamed and the error message will be different
-    experr = acferrmsg if sizeb > 50 or sizea > 50 else cferrmsg
+    annexed = sizea > 50 or sizeb > 50
+    experr = acferrmsg if annexed else cferrmsg
 
     fname = "dl_over_tracked"
     loca.cdrel()
     util.mkrandfile(fname, sizea)
     loca.runcommand("gin", "upload", fname)
+    hasha = util.md5sum(fname)
 
     locb.cdrel()
     util.mkrandfile(fname, sizeb)
+    hashb = util.md5sum(fname)
     locb.runcommand("gin", "commit", fname)
     out, err = locb.runcommand("gin", "download", exit=False)
-    locb.runcommand("ls", "-l")
     assert err, "Expected error, got nothing"
     assert experr in err
     assert err.endswith(fname)
+
+    if not annexed:
+        # resolution: rename file and sync
+        locb.cdrel()
+        os.rename(fname, fname+".bak")
+        locb.runcommand("gin", "annex", "sync")
+        assert hasha == util.md5sum(fname)
+        assert hashb == util.md5sum(fname+".bak")
 
 
 def test_download_git_over_git(runner):
@@ -123,6 +139,17 @@ def test_download_text_over_text(runner):
     assert cferrmsg in err
     assert err.endswith(fname)
 
+    # resolution: rename file and sync
+    locb.cdrel()
+    os.rename(fname, fname+".bak")
+    locb.runcommand("gin", "annex", "sync")
+
+    # make sure the files haven't changed
+    with open(fname) as txtfile:
+        assert txtfile.read() == "I AM A"
+    with open(fname+".bak") as txtfile:
+        assert txtfile.read() == "I AM B"
+
 
 def test_push_conflict(runner):
     loca, locb = runner
@@ -135,3 +162,6 @@ def test_push_conflict(runner):
     out, err = locb.runcommand("gin", "upload", "newfile-b.git", exit=False)
     assert err, "Expected error, got nothing"
     assert out.endswith(uperrmsg)
+
+    locb.runcommand("gin", "download")
+    locb.runcommand("gin", "upload", "newfile-b.git")
