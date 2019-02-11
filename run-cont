@@ -15,7 +15,15 @@ source ${loc}/scripts/setenv.sh
 
 docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
 
-docker run --rm --network=ginbridge -v "${GIN_CONFIG_DIR}":/home/ginuser/conf -v "${GIN_LOG_DIR}":/home/ginuser/log -v "${loc}/scripts/":/home/ginuser/scripts -v "${loc}/bin/":/ginbin --env-file="${loc}/scripts/contenv" -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
+mounts="
+-v ${GIN_CONFIG_DIR}:/home/ginuser/conf:ro
+-v ${GIN_LOG_DIR}:/home/ginuser/log
+-v ${loc}/scripts/:/home/ginuser/scripts:ro
+-v ${loc}/bin/:/ginbin:ro
+"
+env="--env-file=${loc}/scripts/contenv"
+
+docker run --rm --network=ginbridge ${mounts} ${env} -i --name gintestclient --entrypoint="/usr/bin/bash" -d ginclitests
 
 # kill container on exit
 trap 'docker kill gintestclient' EXIT

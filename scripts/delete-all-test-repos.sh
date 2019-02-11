@@ -6,6 +6,9 @@ pushd $loc
 set -euo pipefail
 source ./contenv
 
+export GIN_CONFIG_DIR=$(mktemp -d)
+cp -a ${HOME}/conf/. ${GIN_CONFIG_DIR}
+
 gin login $username <<< $password
 
 # collect all test repo names
