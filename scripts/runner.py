@@ -72,6 +72,7 @@ class Runner(object):
         for location, repo in self.repositories.items():
             print(f"Cleaning up {location} ({repo})")
             self.cmdloc = location
+            runsilent("gin", "annex", "sync")
             runsilent("gin", "annex", "unused")
             runsilent("gin", "annex", "dropunused")
             runsilent("gin", "annex", "uninit")
