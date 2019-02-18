@@ -5,6 +5,7 @@ can become the contents of the blob itself.
 The same test is run in indirect mode, even though it's not likely to occur
 there.
 """
+import os
 from runner import Runner
 import util
 import pytest
@@ -13,12 +14,12 @@ import pytest
 @pytest.fixture
 def runner():
     r = Runner()
-    r.login()
 
     reponame = util.randrepo()
-    r.runcommand("gin", "create", reponame,
-                 "Test repository for all states")
+    os.mkdir(reponame)
     r.cdrel(reponame)
+
+    r.runcommand("gin", "init")
     r.repositories[r.cmdloc] = reponame
 
     yield r
