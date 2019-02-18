@@ -24,8 +24,7 @@ def runner():
 
     yield r
 
-    r.cleanup()
-    r.logout()
+    r.runcommand("gin", "annex", "uninit")
 
 
 def test_annex_content_indirect(runner):
