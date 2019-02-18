@@ -48,27 +48,59 @@ def run_checks(r, mode):
 
     r.runcommand("gin", "commit", "root*")
 
-    # check that all annexed files are symlinks (in git)
-    out, err = r.runcommand("git", "ls-files", "-s")
-    assert not err
-    outlines = out.splitlines()
-    for line in outlines:
-        line = line.strip()
-        if line.endswith(".annex"):
-            assert line[:6] == "120000"
-        elif line.endswith(".git"):
-            assert line[:3] == "100"
-        else:
-            assert False, "Found unexpected file in repository"
-
-    # check if the size of each annexed file in git is less than 500 bytes
-    for idx in range(20, 24):
-        fname = f"root-{idx}.annex"
-        out, err = r.runcommand("git", "cat-file", "-s", f":{fname}")
+    def check_files():
+        # check that all annexed files are symlinks (in git)
+        out, err = r.runcommand("git", "ls-files", "-s")
         assert not err
-        assert int(out) < 500
+        outlines = out.splitlines()
+        for line in outlines:
+            line = line.strip()
+            if line.endswith(".annex"):
+                assert line[:6] == "120000"
+            elif line.endswith(".git"):
+                assert line[:3] == "100"
+            else:
+                assert False, "Found unexpected file in repository"
 
-        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
-        assert not err
-        assert "annex" in out
-        assert "MD5-" in out
+        # check if the size of each file is < 10k
+        # git files are 5k, annexed files are 2000k
+        # pointer files should be a few bytes
+        out, err = r.runcommand("git", "ls-files")
+        allfiles = out.splitlines()
+        for fname in allfiles:
+            out, err = r.runcommand("git", "cat-file", "-s", f":{fname}")
+            assert not err
+            assert int(out) < 10240
+
+            if fname.endswith(".annex"):
+                out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
+                assert not err
+                assert "annex" in out
+                assert "MD5-" in out
+
+    check_files()
+
+    # create files in subdirectories
+    os.mkdir("subdir-a")
+    r.cdrel("subdir-a")
+    for idx in range(10, 13):
+        util.mkrandfile(f"a-{idx}.git", 5)
+    for idx in range(20, 23):
+        util.mkrandfile(f"a-{idx}.annex", 2000)
+
+    # commit from inside
+    r.runcommand("gin", "commit", ".")
+    check_files()
+
+    r.cdrel("..")
+    os.mkdir("subdir-b")
+    r.cdrel("subdir-b")
+    for idx in range(10, 13):
+        util.mkrandfile(f"b-{idx}.git", 5)
+    for idx in range(20, 23):
+        util.mkrandfile(f"b-{idx}.annex", 2000)
+
+    r.cdrel("..")
+    # commit from outside
+    r.runcommand("gin", "commit", "subdir-b")
+    check_files()
