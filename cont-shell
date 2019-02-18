@@ -11,6 +11,7 @@ set -euo pipefail
 
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
+source ${loc}/scripts/setenv.sh
 
 mounts="
 -v ${GIN_CONFIG_DIR}:/home/ginuser/conf:ro
