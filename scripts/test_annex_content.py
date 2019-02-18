@@ -90,9 +90,9 @@ def run_checks(r, mode):
 
     # commit from inside
     r.runcommand("gin", "commit", ".")
+    r.cdrel("..")
     check_files()
 
-    r.cdrel("..")
     os.mkdir("subdir-b")
     r.cdrel("subdir-b")
     for idx in range(10, 13):
