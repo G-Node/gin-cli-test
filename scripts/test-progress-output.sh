@@ -15,103 +15,135 @@ testroot="/tmp/gintest"
 mkdir -p "$testroot"
 cd "$testroot"
 
+gin --version
+
 gin login $username <<< $password
 
-# create repo (remote and local) and cd into directory
-reponame=gin-test-${RANDOM}
-gin create $reponame "Test repository --- Created with test scripts"
-pushd $reponame
+progtests() {
+    echo "#################################################"
+    outflag=""
+    if (( $# > 0 )); then
+        outflag=$1
+        echo "Using ${outflag} for supported commands"
+    else
+        echo "Running without flag"
+    fi
 
-# create randfiles
-fname1="file-${RANDOM}.rnd"
-echo "Creating $fname1"
-dd if=/dev/urandom of=$fname1 bs=3M count=20 2> /dev/null
-fname2="file-${RANDOM}.rnd"
-echo "Creating $fname2"
-dd if=/dev/urandom of=$fname2 bs=3M count=30 2> /dev/null
-fname3="file-${RANDOM}.rnd"
-echo "Creating $fname3"
-dd if=/dev/urandom of=$fname3 bs=1M count=30 2> /dev/null
+    # create repo (remote and local) and cd into directory
+    reponame=gin-test-${RANDOM}
+    gin create $reponame "Test repository --- Created with test scripts"
+    pushd $reponame
 
-# upload files
-echo ">>> gin upload"
-gin upload .
-echo "<<<"
+    # create randfiles
+    for idx in {00..11}; do
+        fname="file-${idx}.rnd"
+        echo "Creating $fname"
+        dd if=/dev/urandom of=$fname bs=3M count=20 2> /dev/null
+    done
 
-# make some git files and upload them
-for idx in {1..4}
-do
-    mkgitfile gitfile-$idx
-done
-gin upload gitfile-*
+    # upload files
+    echo ">>> gin upload"
+    gin upload ${outflag} .
+    echo "<<<"
 
-# delete local directory
-gin annex uninit || true
-popd
-rm -rf "$reponame"
+    # make some git files and upload them
+    for idx in {1..4}
+    do
+        mkgitfile gitfile-$idx
+    done
+    gin upload ${outflag} gitfile-*
 
-# redownload and check the hashes
-repopath=${username}/${reponame}
-echo ">>> gin get"
-gin get $repopath
-pushd $reponame
+    # delete local directory
+    gin annex uninit || true
+    popd
+    rm -rf "$reponame"
 
-# download first file
-echo ">>> gin get-content"
-gin get-content $fname1
-echo "<<<"
+    # redownload
+    repopath=${username}/${reponame}
+    echo ">>> gin get"
+    gin get ${outflag} $repopath
+    pushd $reponame
 
-# download everything
-echo ">>> gin get-content"
-gin get-content .
-echo "<<<"
-# all files should be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
+    # download first file
+    echo ">>> gin get-content file-00.rnd"
+    gin get-content ${outflag} file-00.rnd
+    echo "<<<"
 
-# modify one annex and one git file
-echo "Mofifying gitfile-4"
-mkgitfile gitfile-4
-echo "Modifying $fname1"
-gin unlock $fname1
-mkannexfile $fname1
+    # download everything
+    echo ">>> gin get-content"
+    gin get-content ${outflag} .
+    echo "<<<"
+    # all files should be OK
+    [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 16 ]
 
-# upload again
-gin upload .
+    # modify one annex and one git file
+    echo "Mofifying gitfile-4"
+    mkgitfile gitfile-4
+    echo "Modifying file-00.rnd"
+    gin unlock ${outflag} file-00.rnd
+    mkannexfile file-00.rnd
 
-# delete local again
-gin annex uninit || true
-popd
-rm -rf "$reponame"
+    # upload again
+    gin upload ${outflag} .
 
-# once more using download command
-echo ">>> gin get"
-gin get $repopath
-pushd $reponame
+    # unlock everything
+    gin unlock ${outflag} .
 
-# do a gin download without content
-echo ">>> gin download"
-gin download
-echo "<<<"
+    # lock some
+    gin lock ${outflag} file-{00..05}.rnd
 
-# now get all content
-echo ">>> gin download --content"
-gin download --content
-echo "<<<"
+    # upload all
+    gin upload ${outflag} .
 
-# all files should be OK
-[ $(gin ls -s | fgrep "OK" | wc -l ) -eq 7 ]
+    # modify and commit
+    gin unlock ${outflag} .
+    for idx in {05..11}; do
+        fname="file-${idx}.rnd"
+        echo "Modifying $fname"
+        dd if=/dev/urandom of=$fname bs=3M count=20 2> /dev/null
+    done
+    gin upload ${outflag} .
 
-# delete a couple of files and check output message
-rm gitfile-4
-rm gitfile-1
-rm $fname1
-gin upload .
+    # delete local again
+    gin annex uninit || true
+    popd
+    rm -rf "$reponame"
 
-# cleanup
-gin annex uninit || true
-popd
-rm -rf $reponame
-gin delete $repopath <<< $repopath
+    # once more using download command
+    echo ">>> gin get"
+    gin get ${outflag} $repopath
+    pushd $reponame
+
+    # do a gin download without content
+    echo ">>> gin download"
+    gin download ${outflag}
+    echo "<<<"
+
+    # now get all content
+    echo ">>> gin download ${outflag} --content"
+    gin download ${outflag} --content
+    echo "<<<"
+
+    # all files should be OK
+    [ $(gin ls -s | fgrep "OK" | wc -l ) -eq 16 ]
+
+    # delete a couple of files and check output message
+    rm gitfile-4
+    rm gitfile-1
+    rm file-00.rnd
+    gin upload ${outflag} .
+
+    # cleanup
+    gin annex uninit || true
+    popd
+    rm -rf $reponame
+    gin delete $repopath <<< $repopath
+
+}
+
+progtests "--verbose"
+progtests "--json"
+progtests
 
 gin logout
 
