@@ -56,11 +56,10 @@ def test_errors(runner):
 
     # Unable to run any command on file that does not exist
     out, err = r.runcommand("gin", "upload", "foobar", exit=False)
-    assert "N/A" in out
-    assert out.endswith(":: No changes recorded")
+    assert out.endswith("   Nothing to do")
     for cmd in commands[1:]:
         out, err = r.runcommand("gin", cmd, "foobar", exit=False)
-        assert out == "No files matched foobar"
+        assert out.endswith("No files matched foobar")
         assert err == "[error] 1 operation failed"
 
     # make a few annex and git files
@@ -75,28 +74,29 @@ def test_errors(runner):
         util.mkrandfile(f"datafile-{idx:03}", 2000)
     r.cdrel("..")
 
-    # No output on lock, unlock, getc, rmc on untracked file(s)
+    # Nothing to do on lock, unlock, getc, rmc on untracked file(s)
+    nothingmsg = "   Nothing to do"
     for cmd in commands[1:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
-        assert not out
+        assert out.endswith(nothingmsg)
         assert not err
 
         out, err = r.runcommand("gin", cmd, "datafiles", exit=False)
-        assert not out
+        assert out.endswith(nothingmsg)
         assert not err
 
         out, err = r.runcommand("gin", cmd, "datafiles/*", exit=False)
-        assert not out
+        assert out.endswith(nothingmsg)
         assert not err
 
     out, err = r.runcommand("gin", "upload", "smallfiles")
     assert out, "Expected output, got nothing"
     assert not err
 
-    # No output on lock, unlock, getc, rmc on non-annexed file(s)
+    # Nothing to do on lock, unlock, getc, rmc on non-annexed file(s)
     for cmd in commands[1:]:
         out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
-        assert not out
+        assert out.endswith(nothingmsg)
         assert not err
 
     out, err = r.runcommand("gin", "upload", "datafiles")
