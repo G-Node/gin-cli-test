@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-scriptsloc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+projectpath=$(git rev-parse --show-toplevel 2> /dev/null)
+scriptsloc=${projectpath}/scripts
 
 mkgitfile() {
     dd if=/dev/urandom of=$1 bs=10k count=1 2> /dev/urandom
@@ -12,9 +13,9 @@ mkannexfile() {
 
 
 export GIN_CONFIG_DIR="$(mktemp -d)"
-export GIN_LOG_DIR="${scriptsloc}/../log"
+export GIN_LOG_DIR="${projectpath}/log"
 
-defaultconf="${scriptsloc}/../conf/config.yml"
+defaultconf="${projectpath}/conf/config.yml"
 mkdir -p ${GIN_CONFIG_DIR}
 cp ${defaultconf} ${GIN_CONFIG_DIR}
 
