@@ -15,7 +15,7 @@ class Runner(object):
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name
         os.chdir(self.cmdloc)
-        self.env = os.environ
+        self.env = os.environ.copy()
         # copy configuration to temporary directory
         # requires GIN_CONFIG_DIR to be set and pointing to the location of
         # the test configuration
