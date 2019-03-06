@@ -1,4 +1,5 @@
 import os
+import tempfile
 from runner import Runner
 import util
 import pytest
@@ -13,13 +14,12 @@ cferrmsg = ("download failed: files changed locally and remotely "
 acferrmsg = ("files changed locally and remotely. Both files have been kept:")
 
 
-@pytest.fixture
-def runner():
+def server_remotes():
     # Use 2 runner instances to checkout two clones and create merge conflicts
     loca = Runner()
-    locb = Runner()
-    # No need to login for b: Use same config and machine; shouldn't matter
     loca.login()
+    locb = Runner()
+    locb.env = loca.env  # share environments between the two users
 
     # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
@@ -30,16 +30,59 @@ def runner():
                     "Repository for testing merge conflicts")
     loca.cdrel(reponame)
     loca.repositories[loca.cmdloc] = reponame
+
     # Clone into B
     locb.runcommand("gin", "get", repopath)
     locb.cdrel(reponame)
     locb.repositories[locb.cmdloc] = None
 
-    yield (loca, locb)
+    return (loca, locb)
 
+
+def dir_remotes(remoteloc):
+    # Use 2 runner instances to checkout two clones and create merge conflicts
+    loca = Runner()
+
+    reponame = util.randrepo()
+    os.mkdir(reponame)
+    loca.cdrel(reponame)
+
+    # Create repo in A
+    loca.runcommand("gin", "init")
+    loca.runcommand("gin", "add-remote", "--create", "--default",
+                    "origin", f"dir:{remoteloc.name}")
+    loca.runcommand("gin", "upload")
+    loca.repositories[loca.cmdloc] = None
+
+    # Init in B and download
+    locb = Runner()
+    os.mkdir(reponame)
+    locb.cdrel(reponame)
+    locb.runcommand("gin", "init")
+    locb.runcommand("gin", "add-remote", "--default",
+                    "origin", f"dir:{remoteloc.name}")
+    locb.runcommand("gin", "download")
+    locb.repositories[locb.cmdloc] = None
+
+    return (loca, locb)
+
+
+@pytest.fixture
+def runner(rtype):
+    if rtype == "server":
+        print("Running server test")
+        loca, locb = server_remotes()
+    elif rtype == "directory":
+        print("Running directory test")
+        tmp = tempfile.TemporaryDirectory(prefix="gintest-remote")
+        loca, locb = dir_remotes(tmp)
+    else:
+        # default to remote
+        loca, locb = server_remotes()
+
+    yield (loca, locb)
     loca.cleanup()
     locb.cleanup()
-    loca.logout()
 
 
 def _untracked_conflict(runner, size):
@@ -119,6 +162,7 @@ def test_download_annex_over_annex(runner):
     _tracked_conflict(runner, 100, 120)
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_text_over_text(runner):
     loca, locb = runner
 
@@ -151,6 +195,7 @@ def test_download_text_over_text(runner):
         assert txtfile.read() == "I AM B"
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_push_conflict(runner):
     loca, locb = runner
 

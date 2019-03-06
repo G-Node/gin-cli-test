@@ -7,6 +7,7 @@ mode, where (un)locking is a no-op.
 """
 import os
 import shutil
+import tempfile
 from runner import Runner
 import util
 import pytest
@@ -29,6 +30,25 @@ def runner():
     r.logout()
 
 
+@pytest.fixture
+def orunner():
+    remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
+    r = Runner()
+    reponame = util.randrepo()
+    os.mkdir(reponame)
+    r.cdrel(reponame)
+    r.runcommand("gin", "init")
+    r.runcommand("gin", "add-remote", "--create", "--default",
+                 "origin", f"dir:{remoteloc.name}")
+    r.runcommand("gin", "upload")
+
+    r.repositories[r.cmdloc] = None
+
+    yield r
+
+    r.cleanup()
+
+
 def test_all_states_indirect(runner):
     run_checks(runner, mode=1)
     print("Done!")
@@ -39,6 +59,11 @@ def test_all_states_direct(runner):
     runner.runcommand("git", "annex", "direct")
     run_checks(runner, mode=0)
     print("Done!")
+
+
+def test_all_states_offline(orunner):
+    print("Running in offline mode")
+    run_checks(orunner, mode=1)
 
 
 def run_checks(r, mode):
