@@ -16,8 +16,8 @@ source ${loc}/scripts/setenv.sh
 docker build --build-arg UID=${UID} -t ginclitests dockerfiles/tester
 
 mounts="
--v ${GIN_CONFIG_DIR}:/home/ginuser/conf:ro
--v ${GIN_LOG_DIR}:/home/ginuser/log
+-v ${GIN_CONFIG_DIR}:/home/ginuser/conf:rw
+-v ${GIN_LOG_DIR}:/home/ginuser/log:rw
 -v ${loc}/scripts/:/home/ginuser/scripts:ro
 -v ${loc}/bin/:/ginbin:ro
 "

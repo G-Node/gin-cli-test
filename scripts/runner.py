@@ -1,6 +1,5 @@
 import sys
 import os
-from pathlib import Path
 import shutil
 import subprocess as sp
 import tempfile
@@ -18,13 +17,13 @@ class Runner(object):
         os.chdir(self.cmdloc)
         self.env = os.environ
         # copy configuration to temporary directory
-        userhome = Path.home().absolute()
-        origconf = os.path.join(userhome, "conf", "config.yml")
+        # requires GIN_CONFIG_DIR to be set and pointing to the location of
+        # the test configuration
+        origconf = os.path.join(self.env["GIN_CONFIG_DIR"], "config.yml")
         confdir = os.path.join(self.cmdloc, "conf")
         os.mkdir(confdir)
         self.env["GIN_CONFIG_DIR"] = confdir
         shutil.copy(origconf, confdir)
-        self.env["GIN_LOG_DIR"] = os.path.join(userhome, "log")
         self.repositories = dict()
 
     def runcommand(self, *args, inp=None, exit=True, echo=True):
