@@ -14,6 +14,7 @@ correct md5 hashes
 11. Delete the local copy of the repository
 """
 import os
+import tempfile
 import shutil
 from glob import glob
 from runner import Runner
@@ -50,6 +51,29 @@ def runner():
     r.logout()
 
 
+@pytest.fixture
+def drunner():
+    remoteloc = tempfile.TemporaryDirectory(prefix="gin-cli-test")
+    r = Runner()
+
+    reponame = util.randrepo()
+    r.reponame = reponame
+    os.mkdir(reponame)
+    r.cdrel(reponame)
+
+    # Create repo in A
+    r.runcommand("gin", "init")
+    r.runcommand("gin", "add-remote", "--create", "--default",
+                 "origin", f"dir:{remoteloc.name}")
+    r.runcommand("gin", "upload")
+    r.repositories[r.cmdloc] = None
+    r.remotedir = remoteloc
+
+    yield r
+
+    r.cleanup()
+
+
 def test_workflow(runner):
     r = runner
 
@@ -75,6 +99,76 @@ def test_workflow(runner):
     repopath = f"{r.username}/{r.reponame}"
     r.runcommand("gin", "get", repopath)
     r.cdrel(r.reponame)
+
+    # should have 5 OK files and 7 NC files
+    status = util.zerostatus()
+    status["OK"] = 5
+    status["NC"] = 7
+    util.assert_status(r, status=status)
+
+    curhashes = hashfiles()
+    for k in curhashes:
+        orig = orighashes[k]
+        cur = curhashes[k]
+        if k.endswith("git"):
+            assert orig == cur
+        elif k.endswith("annex"):
+            assert orig != cur
+            assert os.path.islink(k)
+            assert not os.path.exists(k)
+        else:
+            assert False, f"Unexpected file {k}"
+
+    r.runcommand("gin", "get-content", "root-1.annex")
+    status["OK"] += 1
+    status["NC"] -= 1
+    util.assert_status(r, status=status)
+
+    curhashes = hashfiles()
+    assert orighashes["root-1.annex"] == curhashes["root-1.annex"]
+    assert os.path.islink("root-1.annex")
+
+    # download everything
+    r.runcommand("gin", "getc", ".")
+
+    # everything should be OK
+    status["OK"] += status["NC"]
+    status["NC"] = 0
+    util.assert_status(r, status=status)
+
+    # all hashes should match original now
+    curhashes = hashfiles()
+    assert curhashes == orighashes
+
+
+def test_workflow_dir(drunner):
+    r = drunner
+
+    # create files in root
+    for idx in range(5):
+        util.mkrandfile(f"root-{idx}.git", 5)
+    for idx in range(7):
+        util.mkrandfile(f"root-{idx}.annex", 2000)
+
+    # compute hashes
+    orighashes = hashfiles()
+    print(orighashes)
+
+    # upload
+    r.runcommand("gin", "upload", ".")
+
+    # cleanup local repository
+    r.runcommand("gin", "annex", "uninit")
+    r.cdrel("..")
+    shutil.rmtree(r.reponame)
+
+    # redownload and check the hashes
+    os.mkdir(r.reponame)
+    r.cdrel(r.reponame)
+    r.runcommand("gin", "init")
+    r.runcommand("gin", "add-remote", "--default",
+                 "origin", f"dir:{r.remotedir.name}")
+    r.runcommand("gin", "download")
 
     # should have 5 OK files and 7 NC files
     status = util.zerostatus()
