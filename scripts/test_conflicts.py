@@ -106,10 +106,12 @@ def _untracked_conflict(runner, size):
     locb.runcommand("gin", "download")
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_git_over_untracked(runner):
     _untracked_conflict(runner, 10)
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_annex_over_untracked(runner):
     _untracked_conflict(runner, 100)
 
@@ -146,18 +148,22 @@ def _tracked_conflict(runner, sizea, sizeb):
         assert hashb == util.md5sum(fname+".bak")
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_git_over_git(runner):
     _tracked_conflict(runner, 10, 12)
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_git_over_annex(runner):
     _tracked_conflict(runner, 11, 120)
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_annex_over_git(runner):
     _tracked_conflict(runner, 100, 11)
 
 
+@pytest.mark.parametrize("rtype", ["directory", "server"])
 def test_download_annex_over_annex(runner):
     _tracked_conflict(runner, 100, 120)
 
