@@ -66,6 +66,13 @@ def test_all_states_offline(orunner):
     run_checks(orunner, mode=1)
 
 
+def test_all_states_offline_direct(orunner):
+    print("************ SWITCHING TO DIRECT MODE ************")
+    print("Running in offline mode")
+    orunner.runcommand("git", "annex", "direct")
+    run_checks(orunner, mode=0)
+
+
 def run_checks(r, mode):
     # create files in root
     for idx in range(50):
