@@ -144,8 +144,9 @@ def run_checks(r, mode):
 
     # Upload the files in the first subdirectory only and a couple from the
     # second
-    r.runcommand("gin", "upload", "subdir-a", "subdir-b/subfile-5.annex",
-                 "subdir-b/subfile-9.annex")
+    r.runcommand("gin", "upload", "subdir-a",
+                 os.path.join("subdir-b", "subfile-5.annex"),
+                 os.path.join("subdir-b", "subfile-9.annex"))
     status["OK"] += 12
     status["??"] -= 12
     util.assert_status(r, status=status)
@@ -200,7 +201,7 @@ def run_checks(r, mode):
     util.assert_status(r, status=status)
 
     # Drop some files
-    r.runcommand("gin", "rmc", "subdir-b/subfile-5.annex")
+    r.runcommand("gin", "rmc", os.path.join("subdir-b", "subfile-5.annex"))
     status["NC"] += 1
     status["OK"] -= 1
     util.assert_status(r, status=status)
@@ -232,7 +233,7 @@ def run_checks(r, mode):
     util.assert_status(r, status=status)
 
     # remove a few file and check their status
-    os.remove("subdir-a/subfile-1.annex")
+    os.remove(os.path.join("subdir-a", "subfile-1.annex"))
     os.remove("root-10.git")
     shutil.rmtree("subdir-b")
     status["RM"] += 12
