@@ -38,7 +38,9 @@ def assert_status(r, path=".", status=dict()):
     for code, count in status.items():
         s = sum(1 for line in out.splitlines() if line.startswith(code))
         actual[code] = s
-    assert status == actual, f"Expected {status}; got {actual}"
+    assert status == actual, (f"Status count mismatch\n"
+                              f"Exp: {status}\n"
+                              f"Act: {actual}")
 
 
 def md5sum(filename, printhash=False):

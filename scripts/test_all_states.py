@@ -232,7 +232,7 @@ def run_checks(r, mode):
     status["OK"] -= 69
     util.assert_status(r, status=status)
 
-    # remove a few file and check their status
+    # remove a few files and check their status
     os.remove(os.path.join("subdir-a", "subfile-1.annex"))
     os.remove("root-10.git")
     shutil.rmtree("subdir-b")
