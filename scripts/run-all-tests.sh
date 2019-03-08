@@ -12,7 +12,7 @@ fi
 errorcount=0
 errored=()
 
-pytest
+pytest -v
 teststatus=$?
 
 ./delete-all-test-repos.sh <<< echo
