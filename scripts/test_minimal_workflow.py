@@ -141,7 +141,7 @@ def test_workflow(runner):
     assert curhashes == orighashes
 
 
-def test_workflow_dir(drunner):
+def test_workflow_directory(drunner):
     r = drunner
 
     # create files in root

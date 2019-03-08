@@ -32,6 +32,7 @@ def test_annex_content_indirect(runner):
     print("Done!")
 
 
+@pytest.mark.skip("Direct mode not supported")
 def test_annex_content_direct(runner):
     print("************ SWITCHING TO DIRECT MODE ************")
     runner.runcommand("git", "annex", "direct")

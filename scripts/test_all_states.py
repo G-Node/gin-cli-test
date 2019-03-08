@@ -54,6 +54,7 @@ def test_all_states_indirect(runner):
     print("Done!")
 
 
+@pytest.mark.skip("Direct mode not supported")
 def test_all_states_direct(runner):
     print("************ SWITCHING TO DIRECT MODE ************")
     runner.runcommand("git", "annex", "direct")
@@ -66,6 +67,7 @@ def test_all_states_offline(orunner):
     run_checks(orunner, mode=1)
 
 
+@pytest.mark.skip("Direct mode not supported")
 def test_all_states_offline_direct(orunner):
     print("************ SWITCHING TO DIRECT MODE ************")
     print("Running in offline mode")
@@ -113,12 +115,13 @@ def run_checks(r, mode):
     for idx in range(70, 90):
         util.mkrandfile(f"root-{idx}.annex", 2100)
     status["OK"] = 0
-    status["MD"] = 50 + 20 * (1 - mode)
+    status["UL"] = 0
+    status["MD"] = 70
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "lock", ".")
-    status["LC"] += 20 * mode
-    status["UL"] = 0
+    status["LC"] += status["MD"]
+    status["MD"] = 0
     util.assert_status(r, status=status)
 
     # Upload all except untracked
