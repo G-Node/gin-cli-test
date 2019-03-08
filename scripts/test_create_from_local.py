@@ -72,28 +72,28 @@ def test_create_from_local(runner):
     r.runcommand("gin", "unlock", "root-70.annex",
                  "root-75.annex", "root-84.annex")
 
-    # Unlocked files should be marked UL
-    util.assert_status(r, status={"UL": 3})
+    # Unlocked files should be marked TC
+    util.assert_status(r, status={"TC": 3})
 
     # Unlock a whole directory
     r.runcommand("gin", "unlock", "subdir-a")
-    util.assert_status(r, status={"UL": 13})
+    util.assert_status(r, status={"TC": 13})
 
     # Check subdirectory only
-    util.assert_status(r, path="subdir-a", status={"UL": 10})
+    util.assert_status(r, path="subdir-a", status={"TC": 10})
 
     # Check again but from within the subdir
     r.cdrel("subdir-a")
-    util.assert_status(r, status={"UL": 10})
+    util.assert_status(r, status={"TC": 10})
     r.cdrel("..")
 
     # Relock one of the files
     # gin lock root-84.annex
     r.runcommand("gin", "lock", "root-84.annex")
-    util.assert_status(r, status={"UL": 12})
+    util.assert_status(r, status={"TC": 12})
 
     # check one of the remaining unlocked files explicitly
-    util.assert_status(r, path="root-70.annex", status={"UL": 1})
+    util.assert_status(r, path="root-70.annex", status={"TC": 1})
 
     # There should be no NC files so far
     util.assert_status(r, status={"NC": 0})

@@ -79,7 +79,7 @@ def test_local_only(runner):
 
     # modify all tracked files
     r.runcommand("gin", "unlock", ".")
-    status["UL"] += nannex
+    status["TC"] += nannex
     status["LC"] -= nannex
     util.assert_status(r, status=status)
     for idx in range(ngit):
@@ -92,7 +92,7 @@ def test_local_only(runner):
 
     r.runcommand("gin", "lock", ".")
     status["LC"] += nannex
-    status["UL"] = 0
+    status["TC"] = 0
     util.assert_status(r, status=status)
 
     # Commit all except untracked
@@ -135,19 +135,19 @@ def test_local_only(runner):
     # Unlock some files
     r.runcommand("gin", "unlock", "root-2.annex",
                  "root-7.annex", "root-3.annex")
-    status["UL"] += 3
+    status["TC"] += 3
     status["LC"] -= 3
     util.assert_status(r, status=status)
 
     # Unlock a whole directory
     r.runcommand("gin", "unlock", "subdir-f")
-    status["UL"] += 10
+    status["TC"] += 10
     status["LC"] -= 10
     util.assert_status(r, status=status)
 
     # Check subdirectory only
     tenul = util.zerostatus()
-    tenul["UL"] = 10
+    tenul["TC"] = 10
     util.assert_status(r, path="subdir-f", status=tenul)
 
     # Check again from within the subdir
@@ -157,12 +157,12 @@ def test_local_only(runner):
 
     # Relock one of the files
     r.runcommand("gin", "lock", "root-3.annex")
-    status["UL"] -= 1
+    status["TC"] -= 1
     status["LC"] += 1
     util.assert_status(r, status=status)
 
     oneul = util.zerostatus()
-    oneul["UL"] = 1
+    oneul["TC"] = 1
     # Check one of the remaining unlocked files explicitly
     util.assert_status(r, status=oneul, path="root-2.annex")
 
@@ -176,7 +176,7 @@ def test_local_only(runner):
     status["RM"] += 12
     status["OK"] -= 1  # root-10.git
     status["LC"] -= 10  # subdir-c
-    status["UL"] -= 1  # subdir-f/subfile-1.annex was unlocked
+    status["TC"] -= 1  # subdir-f/subfile-1.annex was unlocked
     util.assert_status(r, status=status)
 
     # Do a gin ls on a deleted file
@@ -196,7 +196,7 @@ def test_local_only(runner):
     shutil.rmtree("subdir-f")
     status["RM"] += 9
     status["??"] += 2
-    status["UL"] -= 9
+    status["TC"] -= 9
     util.assert_status(r, status=status)
 
     print("Done!")
