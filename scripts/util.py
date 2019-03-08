@@ -4,7 +4,7 @@ from hashlib import md5
 
 
 def zerostatus():
-    return {"OK": 0, "UL": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
+    return {"OK": 0, "TC": 0, "NC": 0, "MD": 0, "LC": 0, "RM": 0, "??": 0}
 
 
 def randrepo():

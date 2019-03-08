@@ -107,7 +107,7 @@ def run_checks(r, mode):
 
     # modify all tracked files
     r.runcommand("gin", "unlock", ".")
-    status["UL"] += 20 * mode
+    status["TC"] += 20 * mode
     status["OK"] -= 20 * mode
     util.assert_status(r, status=status)
     for idx in range(50):
@@ -115,11 +115,11 @@ def run_checks(r, mode):
     for idx in range(70, 90):
         util.mkrandfile(f"root-{idx}.annex", 2100)
     status["OK"] = 0
-    status["UL"] = 0
+    status["TC"] = 0
     status["MD"] = 70
     util.assert_status(r, status=status)
 
-    r.runcommand("gin", "lock", ".")
+    r.runcommand("gin", "commit", "*.git", "*.annex")
     status["LC"] += status["MD"]
     status["MD"] = 0
     util.assert_status(r, status=status)
@@ -166,19 +166,19 @@ def run_checks(r, mode):
     # Unlock some files
     r.runcommand("gin", "unlock", "root-70.annex",
                  "root-75.annex", "root-84.annex")
-    status["UL"] += 3 * mode
+    status["TC"] += 3 * mode
     status["OK"] -= 3 * mode
     util.assert_status(r, status=status)
 
     # Unlock a whole directory
     r.runcommand("gin", "unlock", "subdir-a")
-    status["UL"] += 10 * mode
+    status["TC"] += 10 * mode
     status["OK"] -= 10 * mode
     util.assert_status(r, status=status)
 
     # Check subdirectory only
     tenul = util.zerostatus()
-    tenul["UL"] = 10 * mode
+    tenul["TC"] = 10 * mode
     tenul["OK"] = 10 * (1 - mode)
     util.assert_status(r, path="subdir-a", status=tenul)
 
@@ -189,12 +189,12 @@ def run_checks(r, mode):
 
     # Relock one of the files
     r.runcommand("gin", "lock", "root-84.annex")
-    status["UL"] -= 1 * mode
+    status["TC"] -= 1 * mode
     status["OK"] += 1 * mode
     util.assert_status(r, status=status)
 
     oneul = util.zerostatus()
-    oneul["UL"] = 1 * mode
+    oneul["TC"] = 1 * mode
     oneul["OK"] = 1 * (1 - mode)
     # Check one of the remaining unlocked files explicitly
     util.assert_status(r, status=oneul, path="root-70.annex")
@@ -212,7 +212,7 @@ def run_checks(r, mode):
     # change subdir-a from 'unlocked' to 'no content'
     r.runcommand("gin", "remove-content", "subdir-a")
     status["NC"] += 10
-    status["UL"] -= 10 * mode
+    status["TC"] -= 10 * mode
     status["OK"] -= 10 * (1 - mode)
     util.assert_status(r, status=status)
 
@@ -225,8 +225,8 @@ def run_checks(r, mode):
 
     # Upload everything and then rmc it
     r.runcommand("gin", "upload", ".")
-    status["OK"] += status["UL"] + status["MD"] + status["LC"] + status["??"]
-    status["UL"] = status["MD"] = status["LC"] = status["??"] = 0
+    status["OK"] += status["TC"] + status["MD"] + status["LC"] + status["??"]
+    status["TC"] = status["MD"] = status["LC"] = status["??"] = 0
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "rmc", ".")
