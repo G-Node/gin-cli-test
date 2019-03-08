@@ -100,14 +100,25 @@ def test_errors(runner):
         assert not err
 
     out, err = r.runcommand("gin", "upload", "datafiles")
-    out, err = r.runcommand("gin", "rmc", "datafiles")
 
-    # Unable to unlock without content
-    out, err = r.runcommand("gin", "unlock", "datafiles", exit=False)
-    errlines = err.splitlines()
-    for line in errlines[:-1]:
-        assert line.strip().endswith("Content not available locally")
-    assert errlines[-1].strip() == "[error] 5 operations failed"
+    # unlock, commit, modify, and lock before commit
+    r.runcommand("gin", "unlock", "datafiles")
+    r.runcommand("gin", "annex", "sync")
+    # r.runcommand("gin", "commit", "datafiles")
+
+    r.runcommand("ls", "-l", "datafiles")
+    # modify the files
+    for idx in range(3):
+        util.mkrandfile(os.path.join("datafiles", f"datafile-{idx:03}"), 2000)
+
+    out, err = r.runcommand("gin", "lock", "datafiles", exit=False)
+    assert "Locking this file would discard" in out
+    assert err == "[error] 3 operations failed"
+
+    r.runcommand("gin", "upload", ".")
+    r.runcommand("gin", "lock", ".")
+
+    r.runcommand("gin", "rmc", "datafiles")
 
     # change git repo remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
