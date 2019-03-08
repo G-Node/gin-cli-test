@@ -36,9 +36,18 @@ def test_annex_filters(runner):
 
     r.runcommand("gin", "upload", ".")
 
-    # files should be links
+    def isannexed(fname):
+        try:
+            out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
+        except UnicodeDecodeError:
+            # binary file in git -> not annexed
+            return False
+        return "/objects/" in out
+
+    # annexed files should include path to annex objects in their git blob
     for idx in range(3):
-        assert os.path.islink(f"randfile{idx}")
+        fname = f"randfile{idx}"
+        assert isannexed(fname)
 
     # Create markdown, python, and 'foo' file
     # All these are extensions that are excluded from annex in the config
@@ -49,13 +58,13 @@ def test_annex_filters(runner):
 
     r.runcommand("gin", "upload", *excludedfiles)
     for fname in excludedfiles:
-        assert not os.path.islink(fname)
+        assert not isannexed(fname)
 
     # make a really big "script"
     util.mkrandfile("bigscript.py", 100000)  # 100 MB
     r.runcommand("ls", "-lh")
     r.runcommand("gin", "upload", "bigscript.py")
-    assert not os.path.islink("bigscript.py")
+    assert not isannexed("bigscript.py")
 
     # clear local directory and reclone
     r.runcommand("gin", "annex", "uninit")
@@ -74,7 +83,7 @@ def test_annex_filters(runner):
 
     # randfiles should be broken links
     for fname in glob("randfile*"):
-        assert os.path.islink(fname)
+        assert isannexed(fname)
         assert not os.path.exists(fname)
 
     # download first rand file
