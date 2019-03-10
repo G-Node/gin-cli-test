@@ -50,19 +50,6 @@ def run_checks(r, mode):
     r.runcommand("gin", "commit", "root*")
 
     def check_files():
-        # check that all annexed files are symlinks (in git)
-        out, err = r.runcommand("git", "ls-files", "-s")
-        assert not err
-        outlines = out.splitlines()
-        for line in outlines:
-            line = line.strip()
-            if line.endswith(".annex"):
-                assert line[:6] == "120000"
-            elif line.endswith(".git"):
-                assert line[:3] == "100"
-            else:
-                assert False, "Found unexpected file in repository"
-
         # check if the size of each file is < 10k
         # git files are 5k, annexed files are 2000k
         # pointer files should be a few bytes

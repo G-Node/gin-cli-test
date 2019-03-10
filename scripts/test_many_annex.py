@@ -37,7 +37,7 @@ def test_annex_filters(runner):
 
     # files should be links
     for idx in range(N):
-        assert os.path.islink(f"randfile{idx}")
+        util.isannexed(r, f"randfile{idx}")
 
     status = util.zerostatus()
     status["OK"] = N
@@ -48,3 +48,9 @@ def test_annex_filters(runner):
     status["OK"] = 0
     status["NC"] = N
     util.assert_status(r, status=status)
+
+    # TODO: Don't check on Windows
+    # locking annexed files should turn them into symlinks
+    r.runcommand("gin", "lock", ".")
+    for idx in range(N):
+        assert os.path.islink(f"randfile{idx}")
