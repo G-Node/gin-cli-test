@@ -209,15 +209,17 @@ def run_checks(r, mode):
     status["OK"] -= 1
     util.assert_status(r, status=status)
 
-    # change subdir-a from 'unlocked' to 'no content'
+    # remove content in subdir-a
     r.runcommand("gin", "remove-content", "subdir-a")
-    status["NC"] += 10
-    status["TC"] -= 10 * mode
+    # removing content of unlocked files still shows them as unlocked
+    # until the unlock change is committed
+    # status["NC"] += 10
+    # status["TC"] -= 10 * mode
     status["OK"] -= 10 * (1 - mode)
     util.assert_status(r, status=status)
 
     suba = util.zerostatus()
-    suba["NC"] += 10
+    suba["TC"] += 10
     util.assert_status(r, status=suba, path="subdir-a")
     subb["OK"] -= 1
     subb["NC"] += 1
@@ -225,7 +227,12 @@ def run_checks(r, mode):
 
     # Upload everything and then rmc it
     r.runcommand("gin", "upload", ".")
+    # subdir-a goes from TC to NC (unlocked, removed content, then commit)
+    status["TC"] -= 10
+    status["NC"] += 10
+    # modified and untracked files become OK
     status["OK"] += status["TC"] + status["MD"] + status["LC"] + status["??"]
+    # everything else becomes 0
     status["TC"] = status["MD"] = status["LC"] = status["??"] = 0
     util.assert_status(r, status=status)
 
