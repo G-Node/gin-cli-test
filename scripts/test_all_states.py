@@ -105,6 +105,18 @@ def run_checks(r, mode):
     status["??"] += 6
     util.assert_status(r, status=status)
 
+    # lock all annexed files
+    r.runcommand("gin", "lock", ".")
+    status["TC"] += 20
+    status["OK"] -= 20
+    util.assert_status(r, status=status)
+
+    # commit typechange
+    r.runcommand("gin", "commit")
+    status["TC"] -= 20
+    status["OK"] += 20
+    util.assert_status(r, status=status)
+
     # modify all tracked files
     r.runcommand("gin", "unlock", ".")
     status["TC"] += 20 * mode
@@ -131,8 +143,8 @@ def run_checks(r, mode):
     status["OK"] = 70
     util.assert_status(r, status=status)
 
-    # Should have 3 commits so far
-    assert util.getrevcount(r) == 3
+    # Should have 4 commits so far
+    assert util.getrevcount(r) == 4
 
     # Create some subdirectories with files
     for idx in "abcdef":
@@ -163,15 +175,15 @@ def run_checks(r, mode):
     for idx in "cdef":
         util.assert_status(r, path=f"subdir-{idx}", status=tenuntracked)
 
-    # Unlock some files
-    r.runcommand("gin", "unlock", "root-70.annex",
-                 "root-75.annex", "root-84.annex")
+    # Lock some files
+    r.runcommand("gin", "lock", "root-70.annex", "root-75.annex",
+                 "root-84.annex")
     status["TC"] += 3 * mode
     status["OK"] -= 3 * mode
     util.assert_status(r, status=status)
 
-    # Unlock a whole directory
-    r.runcommand("gin", "unlock", "subdir-a")
+    # Lock a whole directory
+    r.runcommand("gin", "lock", "subdir-a")
     status["TC"] += 10 * mode
     status["OK"] -= 10 * mode
     util.assert_status(r, status=status)
@@ -187,17 +199,18 @@ def run_checks(r, mode):
     util.assert_status(r, status=tenul)
     r.cdrel("..")
 
-    # Relock one of the files
-    r.runcommand("gin", "lock", "root-84.annex")
+    # Revert lock on one of the files
+    r.runcommand("gin", "unlock", "root-84.annex")
     status["TC"] -= 1 * mode
     status["OK"] += 1 * mode
     util.assert_status(r, status=status)
 
-    oneul = util.zerostatus()
-    oneul["TC"] = 1 * mode
-    oneul["OK"] = 1 * (1 - mode)
-    # Check one of the remaining unlocked files explicitly
-    util.assert_status(r, status=oneul, path="root-70.annex")
+    onetc = util.zerostatus()
+    onetc["TC"] = 1 * mode
+    onetc["OK"] = 1 * (1 - mode)
+
+    # Check one of the remaining locked files explicitly
+    util.assert_status(r, status=onetc, path="root-70.annex")
 
     # There should be no NC files so far
     status["NC"] = 0
@@ -211,10 +224,8 @@ def run_checks(r, mode):
 
     # remove content in subdir-a
     r.runcommand("gin", "remove-content", "subdir-a")
-    # removing content of unlocked files still shows them as unlocked
-    # until the unlock change is committed
-    # status["NC"] += 10
-    # status["TC"] -= 10 * mode
+    # removing content of TypeChanged files still shows them as unlocked until
+    # the type change is committed
     status["OK"] -= 10 * (1 - mode)
     util.assert_status(r, status=status)
 
