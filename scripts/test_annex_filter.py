@@ -1,7 +1,6 @@
 """
 Test if annex filter rules work properly.
 """
-import os
 import shutil
 from runner import Runner
 import util
@@ -37,12 +36,7 @@ def test_annex_filters(runner):
     r.runcommand("gin", "upload", ".")
 
     def isannexed(fname):
-        try:
-            out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
-        except UnicodeDecodeError:
-            # binary file in git -> not annexed
-            return False
-        return "/objects/" in out
+        return util.isannexed(r, fname)
 
     # annexed files should include path to annex objects in their git blob
     for idx in range(3):
@@ -81,10 +75,8 @@ def test_annex_filters(runner):
     status["NC"] = 3
     util.assert_status(r, status=status)
 
-    # randfiles should be broken links
     for fname in glob("randfile*"):
         assert isannexed(fname)
-        assert not os.path.exists(fname)
 
     # download first rand file
     r.runcommand("gin", "get-content", "randfile1")
