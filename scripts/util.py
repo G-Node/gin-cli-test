@@ -74,3 +74,25 @@ def lsfiles(path):
         files.extend([os.path.join(root, f)
                       for f in fnames])
     return files
+
+
+def isannexed(r, fname):
+    """
+    Figure out if a file is annexed or not:
+    - If the file's git content is binary (UnicodeDecodeError), it's not
+      annexed [False]
+    - If it's not binary and the contents include the string "/objects/", it's
+      a pointer file for annexed content [True]
+    - If it's a symlink, it's a pointer file for annexed content [True]
+    - Otherwise, it's not annexed [False]
+    """
+    try:
+        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
+    except UnicodeDecodeError:
+        # binary file in git -> not annexed
+        return False
+    if "/objects/" in out:
+        return True
+    if os.path.islink(fname):
+        return True
+    return False
