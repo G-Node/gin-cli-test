@@ -58,13 +58,11 @@ def hashtree(r):
     gitfiles, err = r.runcommand("git", "ls-files", echo=False)
     gitfiles = gitfiles.splitlines()
     r.runcommand("gin", "get-content", ".", echo=False)
-    r.runcommand("gin", "unlock", ".", echo=False)
     for filepath in gitfiles:
         msum = md5sum(filepath)
         curtree[filepath] = msum
         # print(f"{filepath}: {msum}")
 
-    r.runcommand("gin", "lock", ".", echo=False)
     return head, curtree
 
 
