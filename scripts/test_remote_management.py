@@ -78,21 +78,13 @@ def test_local_only(runner):
     assert util.getrevcount(r) == 3
 
     # modify all tracked files
-    r.runcommand("gin", "unlock", ".")
-    status["TC"] += nannex
-    status["LC"] -= nannex
-    util.assert_status(r, status=status)
     for idx in range(ngit):
         util.mkrandfile(f"root-{idx}.git", 4)
     for idx in range(nannex):
         util.mkrandfile(f"root-{idx}.annex", 2100)
     status["OK"] -= ngit
-    status["MD"] += ngit
-    util.assert_status(r, status=status)
-
-    r.runcommand("gin", "lock", ".")
-    status["LC"] += nannex
-    status["TC"] = 0
+    status["LC"] -= nannex
+    status["MD"] += ngit + nannex
     util.assert_status(r, status=status)
 
     # Commit all except untracked
@@ -132,40 +124,6 @@ def test_local_only(runner):
     for idx in "ade":
         util.assert_status(r, path=f"subdir-{idx}", status=tenuntracked)
 
-    # Unlock some files
-    r.runcommand("gin", "unlock", "root-2.annex",
-                 "root-7.annex", "root-3.annex")
-    status["TC"] += 3
-    status["LC"] -= 3
-    util.assert_status(r, status=status)
-
-    # Unlock a whole directory
-    r.runcommand("gin", "unlock", "subdir-f")
-    status["TC"] += 10
-    status["LC"] -= 10
-    util.assert_status(r, status=status)
-
-    # Check subdirectory only
-    tenul = util.zerostatus()
-    tenul["TC"] = 10
-    util.assert_status(r, path="subdir-f", status=tenul)
-
-    # Check again from within the subdir
-    r.cdrel("subdir-f")
-    util.assert_status(r, status=tenul)
-    r.cdrel("..")
-
-    # Relock one of the files
-    r.runcommand("gin", "lock", "root-3.annex")
-    status["TC"] -= 1
-    status["LC"] += 1
-    util.assert_status(r, status=status)
-
-    oneul = util.zerostatus()
-    oneul["TC"] = 1
-    # Check one of the remaining unlocked files explicitly
-    util.assert_status(r, status=oneul, path="root-2.annex")
-
     status["NC"] = 0
     util.assert_status(r, status=status)
 
@@ -175,8 +133,7 @@ def test_local_only(runner):
     shutil.rmtree("subdir-c")
     status["RM"] += 12
     status["OK"] -= 1  # root-10.git
-    status["LC"] -= 10  # subdir-c
-    status["TC"] -= 1  # subdir-f/subfile-1.annex was unlocked
+    status["LC"] -= 11  # subdir-c and subdir-f/subfile-1.annex
     util.assert_status(r, status=status)
 
     # Do a gin ls on a deleted file
@@ -196,7 +153,7 @@ def test_local_only(runner):
     shutil.rmtree("subdir-f")
     status["RM"] += 9
     status["??"] += 2
-    status["TC"] -= 9
+    status["LC"] -= 9
     util.assert_status(r, status=status)
 
     print("Done!")
