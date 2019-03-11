@@ -112,10 +112,10 @@ def test_workflow(runner):
         cur = curhashes[k]
         if k.endswith("git"):
             assert orig == cur
+            assert not util.isannexed(r, k)
         elif k.endswith("annex"):
             assert orig != cur
-            assert os.path.islink(k)
-            assert not os.path.exists(k)
+            assert util.isannexed(r, k)
         else:
             assert False, f"Unexpected file {k}"
 
@@ -126,7 +126,7 @@ def test_workflow(runner):
 
     curhashes = hashfiles()
     assert orighashes["root-1.annex"] == curhashes["root-1.annex"]
-    assert os.path.islink("root-1.annex")
+    assert util.isannexed(r, "root-1.annex")
 
     # download everything
     r.runcommand("gin", "getc", ".")
@@ -182,10 +182,10 @@ def test_workflow_directory(drunner):
         cur = curhashes[k]
         if k.endswith("git"):
             assert orig == cur
+            assert not util.isannexed(r, k)
         elif k.endswith("annex"):
             assert orig != cur
-            assert os.path.islink(k)
-            assert not os.path.exists(k)
+            assert util.isannexed(r, k)
         else:
             assert False, f"Unexpected file {k}"
 
@@ -196,7 +196,7 @@ def test_workflow_directory(drunner):
 
     curhashes = hashfiles()
     assert orighashes["root-1.annex"] == curhashes["root-1.annex"]
-    assert os.path.islink("root-1.annex")
+    assert util.isannexed(r, k)
 
     # download everything
     r.runcommand("gin", "getc", ".")

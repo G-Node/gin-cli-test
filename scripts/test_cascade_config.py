@@ -43,19 +43,19 @@ def test_config_path(runner):
     # small files should now be added to annex
     util.mkrandfile("smallfile", 1)
     r.runcommand("gin", "upload", "smallfile")
-    # smallfile should be a symlink
-    assert os.path.islink("smallfile")
+    # smallfile should be annexed
+    assert util.isannexed(r, "smallfile")
 
     # .md file should still be excluded because of the exclusion rule in the
     # global configuration
     util.mkrandfile("anotherfile.md", 10)
     r.runcommand("gin", "upload", "anotherfile.md")
     # anotherfile.md should not be a symlink
-    assert not os.path.islink("anotherfile.md")
+    assert not util.isannexed(r, "anotherfile.md")
 
     # config file should never be added to annex
     r.runcommand("gin", "upload", "config.yml")
-    assert not os.path.islink("config.yml")
+    assert not util.isannexed(r, "config.yml")
 
     # changing gitannex binary in local configuration should have no effect
     conf["bin"] = {"gitannex": "ls"}

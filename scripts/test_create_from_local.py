@@ -68,15 +68,15 @@ def test_create_from_local(runner):
     for p in "cdef":
         util.assert_status(r, path=f"subdir-{p}", status=subcdef)
 
-    # Unlock some files
-    r.runcommand("gin", "unlock", "root-70.annex",
+    # Lock some files
+    r.runcommand("gin", "lock", "root-70.annex",
                  "root-75.annex", "root-84.annex")
 
     # Unlocked files should be marked TC
     util.assert_status(r, status={"TC": 3})
 
-    # Unlock a whole directory
-    r.runcommand("gin", "unlock", "subdir-a")
+    # Lock a whole directory
+    r.runcommand("gin", "lock", "subdir-a")
     util.assert_status(r, status={"TC": 13})
 
     # Check subdirectory only
@@ -87,13 +87,17 @@ def test_create_from_local(runner):
     util.assert_status(r, status={"TC": 10})
     r.cdrel("..")
 
-    # Relock one of the files
-    # gin lock root-84.annex
-    r.runcommand("gin", "lock", "root-84.annex")
+    # Re-unlock one of the files
+    r.runcommand("gin", "unlock", "root-84.annex")
     util.assert_status(r, status={"TC": 12})
 
     # check one of the remaining unlocked files explicitly
     util.assert_status(r, path="root-70.annex", status={"TC": 1})
+
+    # commit the type changes
+    r.runcommand("gin", "commit")
+    # no TCs left
+    util.assert_status(r, status={"TC": 0})
 
     # There should be no NC files so far
     util.assert_status(r, status={"NC": 0})
