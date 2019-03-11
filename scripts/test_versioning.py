@@ -4,9 +4,6 @@ from runner import Runner
 import pytest
 
 
-GLOBALCOMMITCOUNT = 0
-
-
 def revhash(r, num, paths=None):
     """
     Hash of n-th revision (1-based) for given paths (if paths is set) or entire
@@ -36,13 +33,13 @@ def create_files(r):
     return fnames
 
 
-def test_repo_versioning(runner, hashes):
-    global GLOBALCOMMITCOUNT
+@pytest.mark.slow
+def test_repo_versioning(runner):
     r = runner
-    assert util.getrevcount(r) == GLOBALCOMMITCOUNT
+    assert util.getrevcount(r) == r.commitcount
 
     head = revhash(r, 1)
-    repofiles = list(hashes[head].keys())
+    repofiles = list(r.hashes[head].keys())
 
     def checkout_and_compare(selection=None, revision=None,
                              fnames=None, dirnames=None):
@@ -69,9 +66,8 @@ def test_repo_versioning(runner, hashes):
 
         out, err = r.runcommand(*cmdargs, echo=False)
         expecting_changes = bool(out)
-        global GLOBALCOMMITCOUNT
         if expecting_changes:
-            GLOBALCOMMITCOUNT += 1
+            r.commitcount += 1
 
         curtotalrev = util.getrevcount(r)
 
@@ -93,9 +89,9 @@ def test_repo_versioning(runner, hashes):
             "Version command did not create a new commit"
         # compute current hashes and compare with old entry in dict
         head, curhashes = util.hashtree(r)
-        assert expecting_changes == (head not in hashes),\
+        assert expecting_changes == (head not in r.hashes),\
             "New head same as an old head"
-        hashes[head] = curhashes
+        r.hashes[head] = curhashes
 
         if fnames is not None or dirnames is not None:
             changedfiles = list()
@@ -118,11 +114,11 @@ def test_repo_versioning(runner, hashes):
         # compare all changed files with oldrevhash
         # and the rest with precorevhash
         for fname in changedfiles:
-            if fname in hashes[oldrevhash]:
-                assert curhashes[fname] == hashes[oldrevhash][fname]
+            if fname in r.hashes[oldrevhash]:
+                assert curhashes[fname] == r.hashes[oldrevhash][fname]
                 # else file didn't exist in oldrev
         for fname in unchangedfiles:
-            assert curhashes[fname] == hashes[precorevhash][fname]
+            assert curhashes[fname] == r.hashes[precorevhash][fname]
 
     checkout_and_compare(4)
     checkout_and_compare(8)
@@ -151,9 +147,9 @@ def test_repo_versioning(runner, hashes):
     checkout_and_compare(6, fnames=[datafiles[0], datafiles[5],
                                     datafiles[2]], dirnames=["smallfiles"])
 
-    assert util.getrevcount(r) == GLOBALCOMMITCOUNT
+    assert util.getrevcount(r) == r.commitcount
 
-    revhashes = list(hashes.keys())
+    revhashes = list(r.hashes.keys())
 
     checkout_and_compare(revision=revhashes[8])
     checkout_and_compare(revision=revhashes[4], fnames=repofiles[3:])
@@ -161,13 +157,12 @@ def test_repo_versioning(runner, hashes):
     checkout_and_compare(revision="HEAD~3", fnames=repofiles[2:3])
     checkout_and_compare(revision="master~10", dirnames=["smallfiles"])
 
-    assert util.getrevcount(r) == GLOBALCOMMITCOUNT
+    assert util.getrevcount(r) == r.commitcount
 
 
-def test_version_copyto(runner, hashes):
+@pytest.mark.slow
+def test_version_copyto(runner):
     r = runner
-
-    assert util.getrevcount(r) == GLOBALCOMMITCOUNT
 
     # checkout some old file versions alongside current one
     def get_old_files(selection, paths, dest):
@@ -183,14 +178,14 @@ def test_version_copyto(runner, hashes):
             "New commit was created when it shouldn't"
 
         # get content for the checked out files
-        r.runcommand("gin", "get-content", dest, exit=False)
+        r.runcommand("gin", "get-content", dest)
         # hash checked out file(s)
         # assumes all files in dest are from oldrevhash
         for fn in util.lsfiles(dest):
             cohash = util.md5sum(fn)
             origname = fn[len(dest)+1:-16]
             print(f"{fn} becomes {origname}")
-            assert cohash == hashes[oldrevhash][origname],\
+            assert cohash == r.hashes[oldrevhash][origname],\
                 "Checked out file hash verification failed"
 
     get_old_files(2, ["datafiles/datafile-003"], "oldstuff")
@@ -213,39 +208,32 @@ def runner():
     r.cdrel(reponame)
     r.repositories[r.cmdloc] = reponame
 
+    r.hashes = dict()
+    head, curhashes = util.hashtree(r)
+    r.hashes[head] = curhashes
+
+    # add files and compute their md5 hashes
+    create_files(r)
+    out, err = r.runcommand("gin", "upload", ".", echo=False)
+    head, curhashes = util.hashtree(r)
+    r.hashes[head] = curhashes
+    r.commitcount = 2
+
+    # update all files 10 times
+    print("Creating files")
+    for _ in range(10):
+        create_files(r)
+        out, err = r.runcommand("gin", "upload", ".", echo=False)
+        head, curhashes = util.hashtree(r)
+        r.hashes[head] = curhashes
+        r.commitcount += 1
+
+    # verify commit count before returning
+    assert util.getrevcount(r) == r.commitcount
+
     yield r
 
     r.cleanup()
     r.logout()
 
     print("DONE!")
-
-
-@pytest.fixture(scope="module")
-def hashes(runner):
-    global GLOBALCOMMITCOUNT
-    r = runner
-    GLOBALCOMMITCOUNT = 0
-    hashes = dict()
-
-    head, curhashes = util.hashtree(r)
-    hashes[head] = curhashes
-
-    # add files and compute their md5 hashes
-    create_files(r)
-    out, err = r.runcommand("gin", "upload", ".", echo=False)
-    head, curhashes = util.hashtree(r)
-    hashes[head] = curhashes
-    GLOBALCOMMITCOUNT = 2
-
-    # update all files 10 times
-    print("Creating files")
-    for _ in range(10):
-        r.runcommand("gin", "unlock", ".", echo=False)
-        create_files(r)
-        out, err = r.runcommand("gin", "upload", ".", echo=False)
-        head, curhashes = util.hashtree(r)
-        hashes[head] = curhashes
-        GLOBALCOMMITCOUNT += 1
-
-    return hashes
