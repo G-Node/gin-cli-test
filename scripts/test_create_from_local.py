@@ -72,7 +72,7 @@ def test_create_from_local(runner):
     r.runcommand("gin", "lock", "root-70.annex",
                  "root-75.annex", "root-84.annex")
 
-    # Unlocked files should be marked TC
+    # Locked files should be marked TC
     util.assert_status(r, status={"TC": 3})
 
     # Lock a whole directory

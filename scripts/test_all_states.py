@@ -49,6 +49,7 @@ def orunner():
     r.cleanup()
 
 
+@pytest.mark.slow
 def test_all_states_indirect(runner):
     run_checks(runner, mode=1)
     print("Done!")
@@ -62,6 +63,7 @@ def test_all_states_direct(runner):
     print("Done!")
 
 
+@pytest.mark.slow
 def test_all_states_offline(orunner):
     print("Running in offline mode")
     run_checks(orunner, mode=1)
