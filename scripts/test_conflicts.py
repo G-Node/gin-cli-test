@@ -143,7 +143,7 @@ def _tracked_conflict(runner, sizea, sizeb):
         # resolution: rename file and sync
         locb.cdrel()
         os.rename(fname, fname+".bak")
-        locb.runcommand("gin", "annex", "sync")
+        locb.runcommand("gin", "sync")
         assert hasha == util.md5sum(fname)
         assert hashb == util.md5sum(fname+".bak")
 
