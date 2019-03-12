@@ -87,7 +87,9 @@ def isannexed(r, fname):
     """
     try:
         out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, IndexError):
+        # For some reason on Windows a UnicodeDecodeError results in an
+        # IndexError
         # binary file in git -> not annexed
         return False
     if "/objects/" in out:
