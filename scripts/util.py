@@ -1,4 +1,5 @@
 import os
+import stat
 from random import randint
 from hashlib import md5
 
@@ -94,3 +95,8 @@ def isannexed(r, fname):
     if os.path.islink(fname):
         return True
     return False
+
+
+def force_rm(func, path, excinfo):
+    os.chmod(path, stat.S_IWRITE)
+    func(path)

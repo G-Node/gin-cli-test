@@ -130,7 +130,7 @@ def test_local_only(runner):
     # Remove a few file and check their status
     os.remove("subdir-f/subfile-1.annex")
     os.remove("root-10.git")
-    shutil.rmtree("subdir-c")
+    shutil.rmtree("subdir-c", onerror=util.force_rm)
     status["RM"] += 12
     status["OK"] -= 1  # root-10.git
     status["LC"] -= 11  # subdir-c and subdir-f/subfile-1.annex
@@ -150,7 +150,7 @@ def test_local_only(runner):
     # Add new files, remove some existing ones, check status and upload
     util.mkrandfile("new-annex-file", 10021)
     util.mkrandfile("new-git-file", 10)
-    shutil.rmtree("subdir-f")
+    shutil.rmtree("subdir-f", onerror=util.force_rm)
     status["RM"] += 9
     status["??"] += 2
     status["LC"] -= 9

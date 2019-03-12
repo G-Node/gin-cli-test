@@ -6,19 +6,11 @@ to correctly count the status of files after locking or unlocking in direct
 mode, where (un)locking is a no-op.
 """
 import os
-import stat
 import shutil
 import tempfile
 from runner import Runner
 import util
 import pytest
-
-
-def force_rm(func, path, excinfo):
-    print(f">>> Changing permission for {path}")
-    os.chmod(path, stat.S_IWRITE)
-    print(f">>> Retrying delete of {path}")
-    func(path)
 
 
 @pytest.fixture
@@ -266,7 +258,7 @@ def run_checks(r, mode):
     # remove a few files and check their status
     os.remove(os.path.join("subdir-a", "subfile-1.annex"))
     os.remove("root-10.git")
-    shutil.rmtree("subdir-b", onerror=force_rm)
+    shutil.rmtree("subdir-b", onerror=util.force_rm)
     status["RM"] += 12
     status["NC"] -= 11
     status["OK"] -= 1
@@ -279,7 +271,7 @@ def run_checks(r, mode):
     # Add new files, remove some existing ones, check status and upload
     util.mkrandfile("new-annex-file", 10021)
     util.mkrandfile("new-git-file", 10)
-    shutil.rmtree("subdir-c", onerror=force_rm)
+    shutil.rmtree("subdir-c", onerror=util.force_rm)
     status["RM"] += 10
     status["??"] += 2
     status["NC"] -= 10

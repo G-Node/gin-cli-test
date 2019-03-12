@@ -93,7 +93,7 @@ def test_workflow(runner):
     # cleanup local repository
     r.runcommand("gin", "annex", "uninit")
     r.cdrel("..")
-    shutil.rmtree(r.reponame)
+    shutil.rmtree(r.reponame, onerror=util.force_rm)
 
     # redownload and check the hashes
     repopath = f"{r.username}/{r.reponame}"
@@ -160,7 +160,7 @@ def test_workflow_directory(drunner):
     # cleanup local repository
     r.runcommand("gin", "annex", "uninit")
     r.cdrel("..")
-    shutil.rmtree(r.reponame)
+    shutil.rmtree(r.reponame, onerror=util.force_rm)
 
     # redownload and check the hashes
     os.mkdir(r.reponame)

@@ -63,7 +63,7 @@ def test_annex_filters(runner):
     # clear local directory and reclone
     r.runcommand("gin", "annex", "uninit")
     r.cdrel("..")
-    shutil.rmtree(r.reponame)
+    shutil.rmtree(r.reponame, onerror=util.force_rm)
 
     repopath = f"{r.username}/{r.reponame}"
     r.runcommand("gin", "get", repopath)
