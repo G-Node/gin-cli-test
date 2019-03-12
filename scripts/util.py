@@ -86,7 +86,8 @@ def isannexed(r, fname):
     - Otherwise, it's not annexed [False]
     """
     try:
-        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
+        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}",
+                                echo=False)
     except (UnicodeDecodeError, IndexError):
         # For some reason on Windows a UnicodeDecodeError results in an
         # IndexError
