@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
-pushd $loc
+pushd $loc/..
 
 set -euo pipefail
-source ./contenv
-
-export GIN_CONFIG_DIR=$(mktemp -d)
-cp -a ${HOME}/conf/. ${GIN_CONFIG_DIR}
+source testenv
 
 gin login $username <<< $password
 
@@ -53,5 +50,7 @@ then
         echo "Removed $reponame"
     done
 fi
+
+gin logout
 
 echo "DONE!"

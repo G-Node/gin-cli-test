@@ -3,6 +3,8 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
+source testenv
+
 if ! which gin
 then
     echo "gin binary not found. Aborting"
@@ -15,8 +17,7 @@ errored=()
 pytest -v
 teststatus=$?
 
-./delete-all-test-repos.sh <<< echo
-./logout.sh
+./scripts/delete-all-test-repos.sh <<< echo
 
 if [ $teststatus -gt 0 ]
 then
