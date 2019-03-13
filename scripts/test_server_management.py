@@ -5,20 +5,20 @@ import json
 
 
 srva = ("gin", "add-server",
-        "--web", "http://gintestserver:3000",
-        "--git", "git@gintestserver:22",
+        "--web", "http://127.0.0.2:3000",
+        "--git", "git@127.0.0.2:2222",
         "srva")
 
 srvb = ("gin", "add-server",
-        "--web", "http://gintestserverb:3000",
-        "--git", "git@gintestserverb:22",
+        "--web", "http://127.0.0.3:3000",
+        "--git", "git@127.0.0.3:2222",
         "srvb")
 
-inpforma = ("http", "gintestserver", "3000",
-            "git", "gintestserver", "22", "yes")
+inpforma = ("http", "127.0.0.2", "3000",
+            "git",  "127.0.0.2", "2222", "yes")
 
-inpformb = ("http", "gintestserverb", "3000",
-            "git", "gintestserverb", "22", "yes")
+inpformb = ("http", "127.0.0.3", "3000",
+            "git",  "127.0.0.3", "2222", "yes")
 
 
 @pytest.fixture
