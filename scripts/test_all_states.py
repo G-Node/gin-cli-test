@@ -1,9 +1,5 @@
 """
 Runs through all possible file states and checks the output of 'gin ls'.
-
-The test is run in both direct and indirect modes. The 'mode' argument is used
-to correctly count the status of files after locking or unlocking in direct
-mode, where (un)locking is a no-op.
 """
 import os
 import shutil
@@ -50,34 +46,18 @@ def orunner():
 
 
 @pytest.mark.slow
-def test_all_states_indirect(runner):
-    run_checks(runner, mode=1)
-    print("Done!")
-
-
-@pytest.mark.skip("Direct mode not supported")
-def test_all_states_direct(runner):
-    print("************ SWITCHING TO DIRECT MODE ************")
-    runner.runcommand("git", "annex", "direct")
-    run_checks(runner, mode=0)
+def test_all_states(runner):
+    run_checks(runner)
     print("Done!")
 
 
 @pytest.mark.slow
-def test_all_states_offline(orunner):
-    print("Running in offline mode")
-    run_checks(orunner, mode=1)
+def test_all_states_directory(orunner):
+    print("Using directory remote")
+    run_checks(orunner)
 
 
-@pytest.mark.skip("Direct mode not supported")
-def test_all_states_offline_direct(orunner):
-    print("************ SWITCHING TO DIRECT MODE ************")
-    print("Running in offline mode")
-    orunner.runcommand("git", "annex", "direct")
-    run_checks(orunner, mode=0)
-
-
-def run_checks(r, mode):
+def run_checks(r):
     # create files in root
     for idx in range(50):
         util.mkrandfile(f"root-{idx}.git", 5)
@@ -121,8 +101,8 @@ def run_checks(r, mode):
 
     # modify all tracked files
     r.runcommand("gin", "unlock", ".")
-    status["TC"] += 20 * mode
-    status["OK"] -= 20 * mode
+    status["TC"] += 20
+    status["OK"] -= 20
     util.assert_status(r, status=status)
     for idx in range(50):
         util.mkrandfile(f"root-{idx}.git", 4)
@@ -180,20 +160,19 @@ def run_checks(r, mode):
     # Lock some files
     r.runcommand("gin", "lock", "root-70.annex", "root-75.annex",
                  "root-84.annex")
-    status["TC"] += 3 * mode
-    status["OK"] -= 3 * mode
+    status["TC"] += 3
+    status["OK"] -= 3
     util.assert_status(r, status=status)
 
     # Lock a whole directory
     r.runcommand("gin", "lock", "subdir-a")
-    status["TC"] += 10 * mode
-    status["OK"] -= 10 * mode
+    status["TC"] += 10
+    status["OK"] -= 10
     util.assert_status(r, status=status)
 
     # Check subdirectory only
     tenul = util.zerostatus()
-    tenul["TC"] = 10 * mode
-    tenul["OK"] = 10 * (1 - mode)
+    tenul["TC"] = 10
     util.assert_status(r, path="subdir-a", status=tenul)
 
     # Check again from within the subdir
@@ -203,13 +182,12 @@ def run_checks(r, mode):
 
     # Revert lock on one of the files
     r.runcommand("gin", "unlock", "root-84.annex")
-    status["TC"] -= 1 * mode
-    status["OK"] += 1 * mode
+    status["TC"] -= 1
+    status["OK"] += 1
     util.assert_status(r, status=status)
 
     onetc = util.zerostatus()
-    onetc["TC"] = 1 * mode
-    onetc["OK"] = 1 * (1 - mode)
+    onetc["TC"] = 1
 
     # Check one of the remaining locked files explicitly
     util.assert_status(r, status=onetc, path="root-70.annex")
@@ -228,7 +206,6 @@ def run_checks(r, mode):
     r.runcommand("gin", "remove-content", "subdir-a")
     # removing content of TypeChanged files still shows them as unlocked until
     # the type change is committed
-    status["OK"] -= 10 * (1 - mode)
     util.assert_status(r, status=status)
 
     suba = util.zerostatus()
