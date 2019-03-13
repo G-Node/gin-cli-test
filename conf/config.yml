@@ -2,13 +2,13 @@ servers:
     gin:
         web:
             protocol: http
-            host: gintestserver
+            host: 127.0.0.2
             port: 3000
         git:
             user: git
-            host: gintestserver
-            port: 22
-            hostkey: "gintestserver,172.18.0.2 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBG0pI0YT4rNV3vP8TA0owc2aEhaWyT/oxXTdZXNtEOavvgBHRyD/SPGohRelWwvSTHood0e/PTH2K6R0/Ef9cxw="
+            host: 127.0.0.2
+            port: 2222
+            hostkey: "[127.0.0.2]:2222 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBG0pI0YT4rNV3vP8TA0owc2aEhaWyT/oxXTdZXNtEOavvgBHRyD/SPGohRelWwvSTHood0e/PTH2K6R0/Ef9cxw="
 
 annex:
     minsize: 50kB

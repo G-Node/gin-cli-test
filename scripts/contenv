@@ -1,4 +1,0 @@
-GIN_CONFIG_DIR=/home/ginuser/conf
-GIN_LOG_DIR=/home/ginuser/log
-username=testuser
-password="a test password 42"
