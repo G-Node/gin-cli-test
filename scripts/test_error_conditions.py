@@ -21,6 +21,10 @@ def runner():
     r.reponame = reponame
     r.repositories[r.cmdloc] = reponame
 
+    r.cdrel(reponame)
+    r.runcommand("gin", "upload")
+    r.cdrel("..")
+
     yield r
 
     r.cleanup()
@@ -123,7 +127,7 @@ def test_errors(runner):
     # change git repo remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
     name, address, *_ = out.split()
-    address = address.replace("22", "1")  # FIXME: port might not be in remote
+    address = address.replace("2222", "1111")
     r.runcommand("git", "remote", "set-url", name, address)
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
@@ -134,7 +138,7 @@ def test_errors(runner):
     assert errlines[-1].strip() == "[error] 5 operations failed"
 
     # revert remote change
-    address = address.replace("1", "22")
+    address = address.replace("1111", "2222")
     r.runcommand("git", "remote", "set-url", name, address)
 
     # Change gin and git server address:port in config and test failures
@@ -144,7 +148,7 @@ def test_errors(runner):
     r.env["GIN_CONFIG_DIR"] = badconfdir
     shutil.copytree(goodconfdir, badconfdir)
     with open(os.path.join(goodconfdir, "config.yml")) as conffile:
-        confdata = yaml.load(conffile.read())
+        confdata = yaml.load(conffile.read(), Loader=yaml.CSafeLoader)
 
     confdata["servers"]["gin"]["web"]["port"] = 1
     confdata["servers"]["gin"]["git"]["port"] = 1
