@@ -10,15 +10,15 @@ srva = ("gin", "add-server",
         "srva")
 
 srvb = ("gin", "add-server",
-        "--web", "http://127.0.0.3:3000",
-        "--git", "git@127.0.0.3:2222",
+        "--web", "http://127.0.0.3:4000",
+        "--git", "git@127.0.0.3:2424",
         "srvb")
 
 inpforma = ("http", "127.0.0.2", "3000",
             "git",  "127.0.0.2", "2222", "yes")
 
-inpformb = ("http", "127.0.0.3", "3000",
-            "git",  "127.0.0.3", "2222", "yes")
+inpformb = ("http", "127.0.0.3", "4000",
+            "git",  "127.0.0.3", "2424", "yes")
 
 
 @pytest.fixture
