@@ -91,10 +91,12 @@ def _untracked_conflict(runner, size):
     fname = "dl_over_untracked"
     loca.cdrel()
     util.mkrandfile(fname, size)
+    hasha = util.md5sum(fname)
     loca.runcommand("gin", "upload", fname)
 
     locb.cdrel()
     util.mkrandfile(fname, size+(size//10))
+    hashb = util.md5sum(fname)
     out, err = locb.runcommand("gin", "download", exit=False)
     assert err, "Expected error, got nothing"
     assert owerrmsg in err
@@ -104,6 +106,13 @@ def _untracked_conflict(runner, size):
     locb.cdrel()
     os.rename(fname, fname+".bak")
     locb.runcommand("gin", "download")
+
+    # both files are in directory now
+    # check if the hashes match
+    locb.runcommand("gin", "getc", ".")
+    allfiles = os.listdir()
+    hashes = [util.md5sum(f) for f in allfiles if f.startswith(fname)]
+    assert sorted(hashes) == sorted([hasha, hashb])
 
 
 @pytest.mark.parametrize("rtype", ["directory", "server"])
@@ -123,7 +132,6 @@ def _tracked_conflict(runner, sizea, sizeb):
     # renamed and the error message will be different
     annexed = sizea > 50 or sizeb > 50
     experr = acferrmsg if annexed else cferrmsg
-    experr = cferrmsg
 
     fname = "dl_over_tracked"
     loca.cdrel()
@@ -147,6 +155,13 @@ def _tracked_conflict(runner, sizea, sizeb):
         locb.runcommand("gin", "sync")
         assert hasha == util.md5sum(fname)
         assert hashb == util.md5sum(fname+".bak")
+    else:
+        # both files are in directory now
+        # check if the hashes match
+        locb.runcommand("gin", "getc", ".")
+        allfiles = os.listdir()
+        hashes = [util.md5sum(f) for f in allfiles if f.startswith(fname)]
+        assert sorted(hashes) == sorted([hasha, hashb])
 
 
 @pytest.mark.parametrize("rtype", ["directory", "server"])
