@@ -71,6 +71,7 @@ def drunner():
 
     yield r
 
+    util.set_rwx_recursive(remoteloc.name)
     r.cleanup()
 
 
@@ -85,7 +86,6 @@ def test_workflow(runner):
 
     # compute hashes
     orighashes = hashfiles()
-    print(orighashes)
 
     # upload
     r.runcommand("gin", "upload", ".")

@@ -103,3 +103,15 @@ def isannexed(r, fname):
 def force_rm(func, path, excinfo):
     os.chmod(path, stat.S_IWRITE)
     func(path)
+
+
+def set_rwx_recursive(path):
+    # set full permissions on everything under the tempdir
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            dname = os.path.join(root, d)
+            os.chmod(dname, 0o777)
+        for f in files:
+            fname = os.path.join(root, f)
+            if os.path.exists(fname):  # skip broken links
+                os.chmod(fname, 0o777)

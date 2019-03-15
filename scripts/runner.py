@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess as sp
 import tempfile
+import util
 
 
 class Runner(object):
@@ -65,29 +66,12 @@ class Runner(object):
         return self.runcommand("gin", "login", username, inp=password)
 
     def cleanup(self):
-        def runsilent(*args):
-            self.runcommand(*args, exit=False, echo=False)
         loc = self.cmdloc
         for location, repo in self.repositories.items():
-            print(f"Cleaning up {location} ({repo})")
-            self.cmdloc = location
-            runsilent("gin", "annex", "sync")
-            runsilent("gin", "annex", "unused")
-            runsilent("gin", "annex", "dropunused")
-            runsilent("gin", "annex", "uninit")
-            # bare repos don't uninit properly and keep data behind
-            # changing permissions for cleanup
-            for root, dirs, files in os.walk(location):
-                for d in dirs:
-                    dname = os.path.join(root, d)
-                    os.chmod(dname, 0o770)
-                for f in files:
-                    fname = os.path.join(root, f)
-                    if os.path.exists(fname):  # skip broken links
-                        os.chmod(fname, 0o770)
             if repo:
                 repopath = f"{self.username}/{repo}"
                 self.runcommand("gin", "delete", repopath, inp=repopath)
+        util.set_rwx_recursive(self.testroot.name)
         self.cmdloc = loc
 
     def logout(self):

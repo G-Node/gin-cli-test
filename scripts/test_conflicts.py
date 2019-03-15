@@ -81,6 +81,7 @@ def runner(rtype):
         loca, locb = server_remotes()
 
     yield (loca, locb)
+
     loca.cleanup()
     locb.cleanup()
 
