@@ -73,6 +73,8 @@ class Runner(object):
                 self.runcommand("gin", "delete", repopath, inp=repopath)
         util.set_rwx_recursive(self.testroot.name)
         self.cmdloc = loc
+        # cd out of tempdir
+        self.cdrel("/")
 
     def logout(self):
         self.runcommand("gin", "logout", exit=False, echo=False)
