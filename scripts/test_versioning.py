@@ -34,6 +34,7 @@ def create_files(r):
 
 
 @pytest.mark.slow
+@pytest.mark.directory  # runs without server requirement
 def test_repo_versioning(runner):
     r = runner
     assert util.getrevcount(r) == r.commitcount
@@ -161,6 +162,7 @@ def test_repo_versioning(runner):
 
 
 @pytest.mark.slow
+@pytest.mark.directory  # runs without server requirement
 def test_version_copyto(runner):
     r = runner
 
@@ -198,15 +200,13 @@ def test_version_copyto(runner):
 @pytest.fixture(scope="module")
 def runner():
     r = Runner()
-    r.login()
     # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
     print("Setting up test repository")
-    r.runcommand("gin", "create", reponame,
-                 "Test repository for versioning",
-                 echo=False)
+    os.mkdir(reponame)
     r.cdrel(reponame)
-    r.repositories[r.cmdloc] = reponame
+    r.runcommand("gin", "init")
+    r.repositories[r.cmdloc] = None
 
     r.hashes = dict()
     head, curhashes = util.hashtree(r)
@@ -214,7 +214,7 @@ def runner():
 
     # add files and compute their md5 hashes
     create_files(r)
-    out, err = r.runcommand("gin", "upload", ".", echo=False)
+    out, err = r.runcommand("gin", "commit", ".", echo=False)
     head, curhashes = util.hashtree(r)
     r.hashes[head] = curhashes
     r.commitcount = 2
@@ -223,7 +223,7 @@ def runner():
     print("Creating files")
     for _ in range(10):
         create_files(r)
-        out, err = r.runcommand("gin", "upload", ".", echo=False)
+        out, err = r.runcommand("gin", "commit", ".", echo=False)
         head, curhashes = util.hashtree(r)
         r.hashes[head] = curhashes
         r.commitcount += 1
