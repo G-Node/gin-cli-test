@@ -72,8 +72,8 @@ def runner(rtype):
     if rtype == "server":
         print("Running server test")
         loca, locb = server_remotes()
-    elif rtype == "directory":
-        print("Running directory test")
+    elif rtype == "offline":
+        print("Running offline test")
         tmp = tempfile.TemporaryDirectory(prefix="gintest-remote")
         loca, locb = dir_remotes(tmp)
     else:
@@ -116,12 +116,12 @@ def _untracked_conflict(runner, size):
     assert sorted(hashes) == sorted([hasha, hashb])
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_git_over_untracked(runner):
     _untracked_conflict(runner, 10)
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_annex_over_untracked(runner):
     _untracked_conflict(runner, 100)
 
@@ -165,27 +165,27 @@ def _tracked_conflict(runner, sizea, sizeb):
         assert sorted(hashes) == sorted([hasha, hashb])
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_git_over_git(runner):
     _tracked_conflict(runner, 10, 12)
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_git_over_annex(runner):
     _tracked_conflict(runner, 11, 120)
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_annex_over_git(runner):
     _tracked_conflict(runner, 100, 11)
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_annex_over_annex(runner):
     _tracked_conflict(runner, 100, 120)
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_download_text_over_text(runner):
     loca, locb = runner
 
@@ -218,7 +218,7 @@ def test_download_text_over_text(runner):
         assert txtfile.read() == "I AM B"
 
 
-@pytest.mark.parametrize("rtype", ["directory", "server"])
+@pytest.mark.parametrize("rtype", ["offline", "server"])
 def test_push_conflict(runner):
     loca, locb = runner
 

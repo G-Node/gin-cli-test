@@ -52,7 +52,7 @@ def test_all_states(runner):
 
 
 @pytest.mark.slow
-def test_all_states_directory(orunner):
+def test_all_states_offline(orunner):
     print("Using directory remote")
     run_checks(orunner)
 

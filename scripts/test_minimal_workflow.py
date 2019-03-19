@@ -141,7 +141,8 @@ def test_workflow(runner):
     assert curhashes == orighashes
 
 
-def test_workflow_directory(drunner):
+@pytest.mark.offline
+def test_workflow_offline(drunner):
     r = drunner
 
     # create files in root

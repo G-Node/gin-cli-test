@@ -292,6 +292,7 @@ def test_add_gin_remote(runner):
     util.assert_status(r, status=status)
 
 
+@pytest.mark.offline
 def test_add_directory_remote(runner):
     r = runner
     r.runcommand("gin", "init")

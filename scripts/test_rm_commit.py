@@ -27,7 +27,8 @@ def runner():
     r.cleanup()
 
 
-def test_rm_commit_directory(runner):
+@pytest.mark.offline
+def test_rm_commit_offline(runner):
     r = runner
     # create files in root
     for idx in range(6):

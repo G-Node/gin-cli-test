@@ -34,7 +34,7 @@ def create_files(r):
 
 
 @pytest.mark.slow
-@pytest.mark.directory  # runs without server requirement
+@pytest.mark.offline  # runs without server requirement
 def test_repo_versioning(runner):
     r = runner
     assert util.getrevcount(r) == r.commitcount
@@ -162,7 +162,7 @@ def test_repo_versioning(runner):
 
 
 @pytest.mark.slow
-@pytest.mark.directory  # runs without server requirement
+@pytest.mark.offline  # runs without server requirement
 def test_version_copyto(runner):
     r = runner
 
