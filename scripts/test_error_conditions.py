@@ -257,3 +257,134 @@ def test_errors(runner):
     assert anotherrepo in out
 
     print("DONE!")
+
+
+@pytest.fixture
+def orunner():
+    remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
+    r = Runner()
+    reponame = util.randrepo()
+    os.mkdir(reponame)
+    r.cdrel(reponame)
+    r.runcommand("gin", "init")
+    r.runcommand("gin", "add-remote", "--create", "--default",
+                 "origin", f"dir:{remoteloc.name}")
+    r.reponame = reponame
+    r.repositories[r.cmdloc] = None
+
+    r.runcommand("gin", "upload")
+
+    r.cdrel("..")
+
+    yield r
+
+    r.cleanup()
+
+
+@pytest.mark.offline
+def test_errors_offline(orunner):
+    r = orunner
+    norepoerr = "[error] this command must be run from inside a gin repository"
+
+    commands = [
+        "upload",
+        "lock",
+        "unlock",
+        "get-content",
+        "remove-content",
+    ]
+
+    # Unable to run any git commands outside a git repository
+    for cmd in commands:
+        # On directory
+        out, err = r.runcommand("gin", cmd, ".", exit=False)
+        assert err == norepoerr
+
+        # On specific file
+        out, err = r.runcommand("gin", cmd, "foobar", exit=False)
+        assert err == norepoerr
+
+    out, err = r.runcommand("gin", "download", exit=False)
+    assert err == norepoerr
+
+    r.cdrel(r.reponame)
+
+    # Unable to run any command on file that does not exist
+    out, err = r.runcommand("gin", "upload", "foobar", exit=False)
+    assert out.endswith("   Nothing to do")
+    for cmd in commands[1:]:
+        out, err = r.runcommand("gin", cmd, "foobar", exit=False)
+        assert out.endswith("No files matched foobar")
+        assert err == "[error] 1 operation failed"
+
+    # make a few annex and git files
+    os.mkdir("smallfiles")
+    r.cdrel("smallfiles")
+    for idx in range(20):
+        util.mkrandfile(f"smallfile-{idx:03}", 20)
+    r.cdrel("..")
+    os.mkdir("datafiles")
+    r.cdrel("datafiles")
+    for idx in range(5):
+        util.mkrandfile(f"datafile-{idx:03}", 2000)
+    r.cdrel("..")
+
+    # Nothing to do on lock, unlock, getc, rmc on untracked file(s)
+    nothingmsg = "   Nothing to do"
+    for cmd in commands[1:]:
+        out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
+        assert out.endswith(nothingmsg)
+        assert not err
+
+        out, err = r.runcommand("gin", cmd, "datafiles", exit=False)
+        assert out.endswith(nothingmsg)
+        assert not err
+
+        out, err = r.runcommand("gin", cmd, "datafiles/*", exit=False)
+        assert out.endswith(nothingmsg)
+        assert not err
+
+    out, err = r.runcommand("gin", "upload", "smallfiles")
+    assert out, "Expected output, got nothing"
+    assert not err
+
+    # Nothing to do on lock, unlock, getc, rmc on non-annexed file(s)
+    for cmd in commands[1:]:
+        out, err = r.runcommand("gin", cmd, "smallfiles", exit=False)
+        assert out.endswith(nothingmsg)
+        assert not err
+
+    out, err = r.runcommand("gin", "upload", "datafiles")
+
+    # unlock, commit, modify, and lock before commit
+    r.runcommand("gin", "unlock", "datafiles")
+    r.runcommand("gin", "annex", "sync")
+    # r.runcommand("gin", "commit", "datafiles")
+
+    r.runcommand("ls", "-l", "datafiles")
+    # modify the files
+    for idx in range(3):
+        util.mkrandfile(os.path.join("datafiles", f"datafile-{idx:03}"), 2000)
+
+    out, err = r.runcommand("gin", "lock", "datafiles", exit=False)
+    assert "Locking this file would discard" in out
+    assert err == "[error] 3 operations failed"
+
+    r.runcommand("gin", "upload", ".")
+    r.runcommand("gin", "lock", ".")
+
+    r.runcommand("gin", "rmc", "datafiles")
+
+    # change git repo remote address/port and test get-content failure
+    out, err = r.runcommand("git", "remote", "-v")
+    name, address, *_ = out.split()
+    r.runcommand("git", "remote", "set-url", name, "#_not_a_real_path")
+
+    out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
+    assert err, "Expected error, got nothing"
+    errlines = err.splitlines()
+    for line in errlines[:-1]:
+        assert line.strip().endswith("(content or server unavailable)")
+    assert errlines[-1].strip() == "[error] 5 operations failed"
+
+    print("DONE!")
