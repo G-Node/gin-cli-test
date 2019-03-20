@@ -181,7 +181,7 @@ def test_version_copyto(runner):
         assert newn == curtotalrev,\
             "New commit was created when it shouldn't"
 
-        out, err = r.runcommand("git", "ls-files", dest)
+        out, err = r.runcommand("git", "ls-files", dest, exit=False)
         assert not len(out)  # none of the new files should be in git
 
         # hash checked out file(s) and check against original
@@ -190,7 +190,6 @@ def test_version_copyto(runner):
             assert not os.path.islink(fn)
             cohash = util.md5sum(fn)
             origname = fn[len(dest)+1:-16]
-            print(f"{fn} becomes {origname}")
             assert cohash == r.hashes[oldrevhash][origname],\
                 "Checked out file hash verification failed"
 
@@ -198,6 +197,9 @@ def test_version_copyto(runner):
     get_old_files(2, ["datafiles/datafile-003"], "oldstuff")
     get_old_files(7, ["datafiles/datafile-001"], "anotherolddir")
     get_old_files(5, ["smallfiles", "datafiles"], "everything")
+    get_old_files(2, ["smallfiles"], "../outside")
+    get_old_files(2, ["datafiles/datafile-001", "datafiles/datafile-003"],
+                  "../old-data-export")
 
     # upload everything and rmc to test annexed content fetching
     r.runcommand("gin", "upload")
