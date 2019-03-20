@@ -1,4 +1,5 @@
 import os
+import tempfile
 import util
 from runner import Runner
 import pytest
@@ -82,7 +83,8 @@ def test_repo_versioning(runner):
         if paths:
             cmdargs.extend(paths)
 
-        print(f"Running gin version command: {cmdargs} with input {inp}")
+        cmdstr = " ".join(cmdargs)
+        print(f"Running gin version command: '{cmdstr}' with input {inp}")
         r.runcommand(*cmdargs, inp=inp, echo=False)
         # should have a new commit now
         newn = util.getrevcount(r)
@@ -179,26 +181,35 @@ def test_version_copyto(runner):
         assert newn == curtotalrev,\
             "New commit was created when it shouldn't"
 
-        # get content for the checked out files
-        r.runcommand("gin", "get-content", dest)
-        # hash checked out file(s)
+        out, err = r.runcommand("git", "ls-files", dest)
+        assert not len(out)  # none of the new files should be in git
+
+        # hash checked out file(s) and check against original
         # assumes all files in dest are from oldrevhash
         for fn in util.lsfiles(dest):
+            assert not os.path.islink(fn)
             cohash = util.md5sum(fn)
             origname = fn[len(dest)+1:-16]
             print(f"{fn} becomes {origname}")
             assert cohash == r.hashes[oldrevhash][origname],\
                 "Checked out file hash verification failed"
 
+    get_old_files(3, ["smallfiles/smallfile-002"], "checkouts")
     get_old_files(2, ["datafiles/datafile-003"], "oldstuff")
     get_old_files(7, ["datafiles/datafile-001"], "anotherolddir")
-    get_old_files(3, ["smallfiles/smallfile-002"], "checkouts")
     get_old_files(5, ["smallfiles", "datafiles"], "everything")
+
+    # upload everything and rmc to test annexed content fetching
+    r.runcommand("gin", "upload")
+    r.runcommand("gin", "rmc", ".")
+    r.runcommand("git", "annex", "unused", echo=False)
+    r.runcommand("git", "annex", "dropunused", "all", echo=False)
     get_old_files(4, ["datafiles"], "olddatafiles")
 
 
 @pytest.fixture(scope="module")
 def runner():
+    remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
     r = Runner()
     # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
@@ -206,6 +217,9 @@ def runner():
     os.mkdir(reponame)
     r.cdrel(reponame)
     r.runcommand("gin", "init")
+    r.runcommand("gin", "add-remote", "--create", "--default",
+                 "origin", f"dir:{remoteloc.name}")
+    r.reponame = reponame
     r.repositories[r.cmdloc] = None
 
     r.hashes = dict()
@@ -213,20 +227,23 @@ def runner():
     r.hashes[head] = curhashes
 
     # add files and compute their md5 hashes
+    print("Creating files")
     create_files(r)
     out, err = r.runcommand("gin", "commit", ".", echo=False)
     head, curhashes = util.hashtree(r)
     r.hashes[head] = curhashes
     r.commitcount = 2
 
-    # update all files 10 times
-    print("Creating files")
-    for _ in range(10):
+    n = 10
+    print(f"Modifying files {n} times")
+    for _ in range(n):
         create_files(r)
         out, err = r.runcommand("gin", "commit", ".", echo=False)
         head, curhashes = util.hashtree(r)
         r.hashes[head] = curhashes
         r.commitcount += 1
+
+    # TODO: Add some symlinks to the directories (not Windows)
 
     # verify commit count before returning
     assert util.getrevcount(r) == r.commitcount
