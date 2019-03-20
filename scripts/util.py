@@ -60,6 +60,8 @@ def hashtree(r):
     gitfiles = gitfiles.splitlines()
     r.runcommand("gin", "get-content", ".", echo=False)
     for filepath in gitfiles:
+        # normalise path separator (for Windows)
+        filepath = os.path.normpath(filepath)
         msum = md5sum(filepath)
         curtree[filepath] = msum
         # print(f"{filepath}: {msum}")
