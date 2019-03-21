@@ -189,7 +189,7 @@ def test_version_copyto(runner):
         for fn in util.lsfiles(dest):
             assert not os.path.islink(fn)
             cohash = util.md5sum(fn)
-            origname = fn[len(dest)+1:-16]
+            origname = fn[len(dest)+1:-18]
             assert cohash == r.hashes[oldrevhash][origname],\
                 "Checked out file hash verification failed"
 
