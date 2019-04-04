@@ -11,7 +11,7 @@ import pytest
 
 @pytest.fixture
 def runner():
-    r = Runner()
+    r = Runner(True)
     r.login()
 
     reponame = util.randrepo()
@@ -29,7 +29,7 @@ def runner():
 @pytest.fixture
 def orunner():
     remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
-    r = Runner()
+    r = Runner(False)
     reponame = util.randrepo()
     os.mkdir(reponame)
     r.cdrel(reponame)
@@ -51,6 +51,7 @@ def test_all_states(runner):
     print("Done!")
 
 
+@pytest.mark.offline
 @pytest.mark.slow
 def test_all_states_offline(orunner):
     print("Using directory remote")

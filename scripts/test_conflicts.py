@@ -41,7 +41,7 @@ def server_remotes():
 
 def dir_remotes(remoteloc):
     # Use 2 runner instances to checkout two clones and create merge conflicts
-    loca = Runner()
+    loca = Runner(False)
 
     reponame = util.randrepo()
     os.mkdir(reponame)
@@ -55,7 +55,7 @@ def dir_remotes(remoteloc):
     loca.repositories[loca.cmdloc] = None
 
     # Init in B and download
-    locb = Runner()
+    locb = Runner(False)
     os.mkdir(reponame)
     locb.cdrel(reponame)
     locb.runcommand("gin", "init")

@@ -54,7 +54,7 @@ def runner():
 @pytest.fixture
 def drunner():
     remoteloc = tempfile.TemporaryDirectory(prefix="gin-cli-test")
-    r = Runner()
+    r = Runner(False)
 
     reponame = util.randrepo()
     r.reponame = reponame

@@ -11,7 +11,7 @@ class Runner(object):
     username = "testuser"
     password = "a test password 42"
 
-    def __init__(self):
+    def __init__(self, set_server_conf=True):
         self.loc = os.path.dirname(os.path.abspath(__file__))
         self.testroot = tempfile.TemporaryDirectory(prefix="gintest")
         self.cmdloc = self.testroot.name
@@ -26,7 +26,8 @@ class Runner(object):
         self.env["GIN_CONFIG_DIR"] = confdir
         shutil.copy(origconf, confdir)
         self.repositories = dict()
-        self._set_server_conf()
+        if set_server_conf:
+            self._set_server_conf()
 
     def _set_server_conf(self):
         self.runcommand("gin", "add-server", "test",

@@ -11,7 +11,7 @@ import pytest
 @pytest.fixture
 def runner():
     remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
-    r = Runner()
+    r = Runner(False)
     reponame = util.randrepo()
     os.mkdir(reponame)
     r.cdrel(reponame)

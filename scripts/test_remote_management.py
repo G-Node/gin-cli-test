@@ -8,14 +8,15 @@ import socket
 
 
 @pytest.fixture
-def runner():
-    r = Runner()
+def runner(request):
+    offline = "offline" in request.node.keywords
+    r = Runner(not offline)
     # create repo locally only
     reponame = util.randrepo()
     localdir = f"{reponame}"
     os.mkdir(localdir)
     r.cdrel(localdir)
-    r.reponame = reponame
+    r.reponame = None if offline else reponame
 
     yield r
 
@@ -24,6 +25,7 @@ def runner():
     r.logout()
 
 
+@pytest.mark.offline
 def test_local_only(runner):
     r = runner
     r.runcommand("gin", "init")
@@ -59,8 +61,6 @@ def test_local_only(runner):
         util.mkrandfile(f"untracked-{idx}", 70)
     status["??"] += nuntracked
     util.assert_status(r, status=status)
-
-    r.login()
 
     # Upload does nothing
     out, err = r.runcommand("gin", "upload", exit=False)

@@ -262,7 +262,7 @@ def test_errors(runner):
 @pytest.fixture
 def orunner():
     remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
-    r = Runner()
+    r = Runner(False)
     reponame = util.randrepo()
     os.mkdir(reponame)
     r.cdrel(reponame)

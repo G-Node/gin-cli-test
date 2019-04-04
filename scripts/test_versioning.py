@@ -212,7 +212,7 @@ def test_version_copyto(runner):
 @pytest.fixture(scope="module")
 def runner():
     remoteloc = tempfile.TemporaryDirectory(prefix="gintest-remote")
-    r = Runner()
+    r = Runner(False)
     # create repo (remote and local) and cd into directory
     reponame = util.randrepo()
     print("Setting up test repository")
