@@ -26,6 +26,14 @@ class Runner(object):
         self.env["GIN_CONFIG_DIR"] = confdir
         shutil.copy(origconf, confdir)
         self.repositories = dict()
+        self._set_server_conf()
+
+    def _set_server_conf(self):
+        self.runcommand("gin", "add-server", "gin",
+                        "--web", "http://127.0.0.2:3000",
+                        "--git", "git@127.0.0.2:2222",
+                        inp="yes")
+        self.runcommand("gin", "use-server", "gin")
 
     def runcommand(self, *args, inp=None, exit=True, echo=True):
         def doecho(msg):
