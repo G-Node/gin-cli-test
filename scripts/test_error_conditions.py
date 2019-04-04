@@ -150,8 +150,8 @@ def test_errors(runner):
     with open(os.path.join(goodconfdir, "config.yml")) as conffile:
         confdata = yaml.load(conffile.read(), Loader=yaml.CSafeLoader)
 
-    confdata["servers"]["gin"]["web"]["port"] = 1
-    confdata["servers"]["gin"]["git"]["port"] = 1
+    confdata["servers"]["test"]["web"]["port"] = 1
+    confdata["servers"]["test"]["git"]["port"] = 1
     with open(os.path.join(badconfdir, "config.yml"), "w") as conffile:
         conffile.write(yaml.dump(confdata))
     out, err = r.runcommand("gin", "create", "ThisShouldFail", exit=False)

@@ -29,11 +29,11 @@ class Runner(object):
         self._set_server_conf()
 
     def _set_server_conf(self):
-        self.runcommand("gin", "add-server", "gin",
+        self.runcommand("gin", "add-server", "test",
                         "--web", "http://127.0.0.2:3000",
                         "--git", "git@127.0.0.2:2222",
                         inp="yes")
-        self.runcommand("gin", "use-server", "gin")
+        self.runcommand("gin", "use-server", "test")
 
     def runcommand(self, *args, inp=None, exit=True, echo=True):
         def doecho(msg):

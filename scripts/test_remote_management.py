@@ -185,7 +185,7 @@ def test_create_remote_on_add(runner):
 
     r.login()
     repopath = f"{r.username}/{r.reponame}"
-    r.runcommand("gin", "add-remote", "--create", "origin", f"gin:{repopath}")
+    r.runcommand("gin", "add-remote", "--create", "origin", f"test:{repopath}")
 
     r.runcommand("gin", "upload")
     status["OK"] += status["LC"]
@@ -219,7 +219,7 @@ def test_create_remote_prompt(runner):
 
     r.login()
     repopath = f"{r.username}/{r.reponame}"
-    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+    out, err = r.runcommand("gin", "add-remote", "origin", f"test:{repopath}",
                             inp="abort")
     assert not err, f"Expected empty error, got\n{err}"
     assert out.endswith("aborted")
@@ -227,7 +227,7 @@ def test_create_remote_prompt(runner):
     assert not out, f"Expected empty output, got\n{out}"
     assert not err, f"Expected empty error, got\n{err}"
 
-    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+    out, err = r.runcommand("gin", "add-remote", "origin", f"test:{repopath}",
                             inp="add anyway")
     out, err = r.runcommand("git", "remote", "-v")
     assert len(out.splitlines()) == 2, "Unexpected output"
@@ -237,7 +237,7 @@ def test_create_remote_prompt(runner):
     assert err, "Expected error, got nothing"
 
     r.runcommand("git", "remote", "rm", "origin")
-    out, err = r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}",
+    out, err = r.runcommand("gin", "add-remote", "origin", f"test:{repopath}",
                             inp="create")
     out, err = r.runcommand("gin", "upload")
 
@@ -275,7 +275,7 @@ def test_add_gin_remote(runner):
                  "Test repository for add remote")
     r.repositories[r.cmdloc] = r.reponame
     repopath = f"{r.username}/{r.reponame}"
-    r.runcommand("gin", "add-remote", "origin", f"gin:{repopath}")
+    r.runcommand("gin", "add-remote", "origin", f"test:{repopath}")
     r.runcommand("gin", "upload")
     status["OK"] += status["LC"]
     status["LC"] = 0
@@ -286,7 +286,7 @@ def test_add_gin_remote(runner):
     util.mkrandfile(f"final-file.annex", 500)
     r.runcommand("gin", "git", "remote", "rm", "origin")
     r.runcommand("gin", "git", "config", "--unset", "gin.remote")
-    r.runcommand("gin", "add-remote", "notorigin", f"gin:{repopath}")
+    r.runcommand("gin", "add-remote", "notorigin", f"test:{repopath}")
     r.runcommand("gin", "upload", "final-file.annex")
     status["OK"] += 1
     util.assert_status(r, status=status)
