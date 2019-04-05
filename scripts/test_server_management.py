@@ -139,21 +139,21 @@ def test_use_server_create_repo(runner):
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 3, f"{servercount} servers configured; expected 3"
+    assert servercount == 4, f"{servercount} servers configured; expected 3"
 
     r.runcommand("gin", "rm-server", "srva")
     out, err = r.runcommand("gin", "servers")
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 2, f"{servercount} servers configured; expected 2"
+    assert servercount == 3, f"{servercount} servers configured; expected 2"
 
     r.runcommand("gin", "rm-server", "srvb")
     out, err = r.runcommand("gin", "servers")
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 1, f"{servercount} servers configured; expected 1"
+    assert servercount == 2, f"{servercount} servers configured; expected 1"
 
     r.runcommand(*srva, inp="yes")
     r.runcommand(*srvb, inp="yes")
@@ -226,21 +226,21 @@ def test_flag_server_create_repo(runner):
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 3, f"{servercount} servers configured; expected 3"
+    assert servercount == 4, f"{servercount} servers configured; expected 3"
 
     r.runcommand("gin", "rm-server", "srva")
     out, err = r.runcommand("gin", "servers")
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 2, f"{servercount} servers configured; expected 2"
+    assert servercount == 3, f"{servercount} servers configured; expected 2"
 
     r.runcommand("gin", "rm-server", "srvb")
     out, err = r.runcommand("gin", "servers")
     assert not err, "error getting 'gin servers' listing"
     servercount = len([line for line in out.splitlines()
                        if line.startswith("*")])
-    assert servercount == 1, f"{servercount} servers configured; expected 1"
+    assert servercount == 2, f"{servercount} servers configured; expected 1"
 
     r.runcommand(*srva, inp="yes")
     r.runcommand(*srvb, inp="yes")
