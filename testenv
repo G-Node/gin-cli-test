@@ -2,4 +2,15 @@ export GIN_CONFIG_DIR=${PWD}/conf
 export GIN_LOG_DIR=${PWD}/log
 export username=testuser
 export password="a test password 42"
-export PS1="(tester) ${PS1}"
+export PS1="(gin-test-env) $ "
+
+resp=""
+while [[ ! "$resp" =~ ^[YyNn]$ ]]; do
+    echo "Set up config and login? [YyNn]"
+    read resp
+done
+if [[ "$resp" =~ [Yy] ]]; then
+    gin add-server test --web http://127.0.0.1:3000 --git git@127.0.0.1:2222 <<< yes
+    gin use-server test
+    gin login ${username} <<< ${password}
+fi
