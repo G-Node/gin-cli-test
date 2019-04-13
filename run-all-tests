@@ -3,7 +3,7 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-source testenv
+noconfirm=1 source testenv
 
 if ! which gin
 then
