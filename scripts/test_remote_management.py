@@ -46,14 +46,13 @@ def test_local_only(runner):
     util.assert_status(r, status=status)
 
     out, err = r.runcommand("gin", "commit", "*.annex")
-    # TODO: LC status should be something else?
     status["??"] -= nannex
     status["LC"] += nannex
     util.assert_status(r, status=status)
 
     out, err = r.runcommand("gin", "commit", ".")
     status["??"] -= ngit
-    status["OK"] += ngit
+    status["LC"] += ngit
     util.assert_status(r, status=status)
 
     # add some untracked files
@@ -82,16 +81,14 @@ def test_local_only(runner):
         util.mkrandfile(f"root-{idx}.git", 4)
     for idx in range(nannex):
         util.mkrandfile(f"root-{idx}.annex", 2100)
-    status["OK"] -= ngit
-    status["LC"] -= nannex
+    status["LC"] -= ngit + nannex
     status["MD"] += ngit + nannex
     util.assert_status(r, status=status)
 
     # Commit all except untracked
     r.runcommand("gin", "commit", "*.annex", "*.git")
-    status["LC"] = nannex
-    status["MD"] = 0
-    status["OK"] = ngit
+    status["LC"] += ngit + nannex
+    status["MD"] -= ngit + nannex
     util.assert_status(r, status=status)
 
     # Should have 4 commits so far
@@ -132,8 +129,7 @@ def test_local_only(runner):
     os.remove("root-10.git")
     shutil.rmtree("subdir-c", onerror=util.force_rm)
     status["RM"] += 12
-    status["OK"] -= 1  # root-10.git
-    status["LC"] -= 11  # subdir-c and subdir-f/subfile-1.annex
+    status["LC"] -= 12  # root-10.git + subdir-c + subdir-f/subfile-1.annex
     util.assert_status(r, status=status)
 
     # Do a gin ls on a deleted file
@@ -178,8 +174,7 @@ def test_create_remote_on_add(runner):
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "commit", ".")
-    status["OK"] = ngit
-    status["LC"] = nannex
+    status["LC"] = ngit + nannex
     status["??"] = 0
     util.assert_status(r, status=status)
 
@@ -212,8 +207,7 @@ def test_create_remote_prompt(runner):
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "commit", ".")
-    status["OK"] = ngit
-    status["LC"] = nannex
+    status["LC"] = ngit + nannex
     status["??"] = 0
     util.assert_status(r, status=status)
 
@@ -241,8 +235,8 @@ def test_create_remote_prompt(runner):
                             inp="create")
     out, err = r.runcommand("gin", "upload")
 
-    status["OK"] += status["LC"]
-    status["LC"] = 0
+    status["OK"] += ngit + nannex
+    status["LC"] -= ngit + nannex
     util.assert_status(r, status=status)
 
 
@@ -265,8 +259,7 @@ def test_add_gin_remote(runner):
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "commit", ".")
-    status["OK"] = ngit
-    status["LC"] = nannex
+    status["LC"] = ngit + nannex
     status["??"] = 0
     util.assert_status(r, status=status)
 
@@ -277,8 +270,8 @@ def test_add_gin_remote(runner):
     repopath = f"{r.username}/{r.reponame}"
     r.runcommand("gin", "add-remote", "origin", f"test:{repopath}")
     r.runcommand("gin", "upload")
-    status["OK"] += status["LC"]
-    status["LC"] = 0
+    status["OK"] += ngit + nannex
+    status["LC"] -= ngit + nannex
     util.assert_status(r, status=status)
 
     # remove remote, add it with a different name (not origin) and see if it
@@ -308,13 +301,12 @@ def test_add_directory_remote(runner):
         util.mkrandfile(f"root-{idx}.annex", 200)
 
     status = util.zerostatus()
-    status["??"] = nannex + ngit
+    status["??"] = ngit + nannex
     util.assert_status(r, status=status)
 
     r.runcommand("gin", "commit", ".")
-    status["OK"] = ngit
-    status["LC"] = nannex
-    status["??"] = 0
+    status["LC"] += ngit + nannex
+    status["??"] -= ngit + nannex
     util.assert_status(r, status=status)
 
     fsremotedir = os.path.join(r.testroot.name, "annexdata")
@@ -324,8 +316,8 @@ def test_add_directory_remote(runner):
     r.repositories[fsremotedir] = None
 
     r.runcommand("gin", "upload")
-    status["OK"] += status["LC"]
-    status["LC"] = 0
+    status["OK"] += ngit + nannex
+    status["LC"] -= ngit + nannex
     util.assert_status(r, status=status)
 
     # TODO: Test cloning from a different location, uploading, and downloading
