@@ -1,9 +1,18 @@
 import sys
 import os
-import shutil
 import subprocess as sp
 import tempfile
 import util
+
+
+TESTCONFIG = """
+annex:
+  exclude:
+  - '*.foo'
+  - '*.md'
+  - '*.py'
+  minsize: 50kB
+"""
 
 
 class Runner(object):
@@ -17,14 +26,13 @@ class Runner(object):
         self.cmdloc = self.testroot.name
         os.chdir(self.cmdloc)
         self.env = os.environ.copy()
-        # copy configuration to temporary directory
-        # requires GIN_CONFIG_DIR to be set and pointing to the location of
-        # the test configuration
-        origconf = os.path.join(self.env["GIN_CONFIG_DIR"], "config.yml")
+        # write configuration file for annex excludes and set up test server
+        # config
         confdir = os.path.join(self.cmdloc, "conf")
         os.mkdir(confdir)
         self.env["GIN_CONFIG_DIR"] = confdir
-        shutil.copy(origconf, confdir)
+        with open(os.path.join(confdir, "config.yml"), "w") as conffile:
+            conffile.write(TESTCONFIG)
         self.repositories = dict()
         if set_server_conf:
             self._set_server_conf()

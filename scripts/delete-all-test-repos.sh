@@ -4,7 +4,7 @@ loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc/..
 
 set -euo pipefail
-source testenv <<< "y"
+noconfirm=1 source testenv
 
 gin login $username <<< $password
 
