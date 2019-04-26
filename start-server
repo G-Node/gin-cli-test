@@ -5,15 +5,17 @@ pushd $loc
 
 set -xeu
 
-docker pull gnode/ginhome
+image=gnode/ginhome
+
+docker pull ${image}
 
 # copy init server data to live location
 srvdata=$(mktemp -d -t gin-data-a-XXXXX)
 cp -a "./gin-data.init/." "${srvdata}"
 
-docker run --rm -v "${srvdata}":/data -p 3000:3000 -p 2222:22 --name gintestserver -d gnode/ginhome
+docker run --rm -v "${srvdata}":/data -p 3000:3000 -p 2222:22 --name gintestserver -d ${image}
 
 # Second server
 srvdatab="$(mktemp -d -t gin-data-b-XXXXX)"
 cp -a "./gin-data.init/." "${srvdatab}"
-docker run --rm -v "${srvdatab}":/data -p 4000:3000 -p 2424:22 --name gintestserverb -d gnode/ginhome
+docker run --rm -v "${srvdatab}":/data -p 4000:3000 -p 2424:22 --name gintestserverb -d ${image}
