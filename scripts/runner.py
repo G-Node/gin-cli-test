@@ -31,6 +31,9 @@ class Runner(object):
         confdir = os.path.join(self.cmdloc, "conf")
         os.mkdir(confdir)
         self.env["GIN_CONFIG_DIR"] = confdir
+        self.env["GIN_LOG_DIR"] = os.path.abspath(
+            os.path.join(self.loc,  "..", "log")
+        )
         with open(os.path.join(confdir, "config.yml"), "w") as conffile:
             conffile.write(TESTCONFIG)
         self.repositories = dict()
