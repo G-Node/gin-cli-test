@@ -324,8 +324,7 @@ def test_add_directory_remote(runner):
 
 
 def assert_locations(r, expected):
-    out, err = r.runcommand("git", "annex", "whereis",
-                            "--json", echo=False)
+    out, err = r.runcommand("git", "annex", "whereis", "--json")
     for line in out.splitlines():
         item = json.loads(line)
         fname = item["file"]

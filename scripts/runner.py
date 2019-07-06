@@ -30,10 +30,12 @@ class Runner(object):
         # config
         confdir = os.path.join(self.cmdloc, "conf")
         os.mkdir(confdir)
+        self.logdir = os.path.join(self.loc,  "..", "log")
+        self.outlog = os.path.join(self.logdir, "runner.log")
+
         self.env["GIN_CONFIG_DIR"] = confdir
-        self.env["GIN_LOG_DIR"] = os.path.abspath(
-            os.path.join(self.loc,  "..", "log")
-        )
+        self.env["GIN_LOG_DIR"] = os.path.abspath(self.logdir)
+
         with open(os.path.join(confdir, "config.yml"), "w") as conffile:
             conffile.write(TESTCONFIG)
         self.repositories = dict()
@@ -47,26 +49,25 @@ class Runner(object):
                         inp="yes")
         self.runcommand("gin", "use-server", "test")
 
-    def runcommand(self, *args, inp=None, exit=True, echo=True):
-        def doecho(msg):
-            if echo:
-                print(msg)
-        doecho(f"> {' '.join(args)}")
+    def runcommand(self, *args, inp=None, exit=True):
+        def log(msg):
+            with open(self.outlog, "a") as logfile:
+                logfile.write(msg)
+        log(f"> {' '.join(args)}")
         if inp:
-            doecho(f"Input: {inp}")
+            log(f"Input: {inp}")
             inp += "\n"
         p = sp.run(args, env=self.env, stdout=sp.PIPE, stderr=sp.PIPE,
                    cwd=self.cmdloc, input=inp, encoding="utf-8")
         stdout, stderr = p.stdout.strip(), p.stderr.strip()
         # if exiting, force enable echo
-        if p.returncode and exit:
-            echo = True
         if stdout:
-            doecho(f"{stdout}")
+            log(f"Out: {stdout}")
         if stderr:
-            doecho(f"{stderr}")
+            log(f"Err: {stderr}")
         if p.returncode and exit:
             sys.exit(p.returncode)
+
         return stdout, stderr
 
     def cdrel(self, path="."):
@@ -97,4 +98,4 @@ class Runner(object):
         self.cdrel("/")
 
     def logout(self):
-        self.runcommand("gin", "logout", exit=False, echo=False)
+        self.runcommand("gin", "logout", exit=False)

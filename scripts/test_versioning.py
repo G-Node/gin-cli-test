@@ -13,7 +13,7 @@ def revhash(r, num, paths=None):
     cmdargs = ["git", "rev-list", "-n", str(num), "HEAD"]
     if paths:
         cmdargs.extend(paths)
-    revlist, _ = r.runcommand(*cmdargs, echo=False)
+    revlist, _ = r.runcommand(*cmdargs)
     revlist = revlist.splitlines()
     return revlist[-1]
 
@@ -66,7 +66,7 @@ def test_repo_versioning(runner):
             cmdargs.append("--")
             cmdargs.extend(paths)
 
-        out, err = r.runcommand(*cmdargs, echo=False)
+        out, err = r.runcommand(*cmdargs)
         expecting_changes = bool(out)
         if expecting_changes:
             r.commitcount += 1
@@ -85,7 +85,7 @@ def test_repo_versioning(runner):
 
         cmdstr = " ".join(cmdargs)
         print(f"Running gin version command: '{cmdstr}' with input {inp}")
-        r.runcommand(*cmdargs, inp=inp, echo=False)
+        r.runcommand(*cmdargs, inp=inp)
         # should have a new commit now
         newn = util.getrevcount(r)
         assert expecting_changes == (newn == curtotalrev + 1),\
@@ -175,7 +175,7 @@ def test_version_copyto(runner):
         cmdargs = ["gin", "version", "--max-count", "0",
                    "--copy-to", dest, *paths]
         print(f"Running gin version command: {cmdargs} with input {selection}")
-        r.runcommand(*cmdargs, inp=str(selection), echo=True)
+        r.runcommand(*cmdargs, inp=str(selection))
         # no new commits
         newn = util.getrevcount(r)
         assert newn == curtotalrev,\
@@ -204,8 +204,8 @@ def test_version_copyto(runner):
     # upload everything and rmc to test annexed content fetching
     r.runcommand("gin", "upload")
     r.runcommand("gin", "rmc", ".")
-    r.runcommand("git", "annex", "unused", echo=False)
-    r.runcommand("git", "annex", "dropunused", "all", echo=False)
+    r.runcommand("git", "annex", "unused")
+    r.runcommand("git", "annex", "dropunused", "all")
     get_old_files(4, ["datafiles"], "olddatafiles")
 
 
@@ -231,7 +231,7 @@ def runner():
     # add files and compute their md5 hashes
     print("Creating files")
     create_files(r)
-    out, err = r.runcommand("gin", "commit", ".", echo=False)
+    out, err = r.runcommand("gin", "commit", ".")
     head, curhashes = util.hashtree(r)
     r.hashes[head] = curhashes
     r.commitcount = 2
@@ -240,7 +240,7 @@ def runner():
     print(f"Modifying files {n} times")
     for _ in range(n):
         create_files(r)
-        out, err = r.runcommand("gin", "commit", ".", echo=False)
+        out, err = r.runcommand("gin", "commit", ".")
         head, curhashes = util.hashtree(r)
         r.hashes[head] = curhashes
         r.commitcount += 1

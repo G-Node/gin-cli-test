@@ -25,7 +25,7 @@ def getrevcount(r):
     """
     Total number of revisions from HEAD.
     """
-    n, _ = r.runcommand("git", "rev-list", "--count", "master", echo=False)
+    n, _ = r.runcommand("git", "rev-list", "--count", "master")
     return int(n)
 
 
@@ -53,12 +53,12 @@ def md5sum(filename, printhash=False):
 
 def hashtree(r):
     curtree = dict()
-    head, err = r.runcommand("git", "rev-parse", "HEAD", echo=False)
+    head, err = r.runcommand("git", "rev-parse", "HEAD")
     print(f"Hashing files in working tree (at {head})")
 
-    gitfiles, err = r.runcommand("git", "ls-files", echo=False)
+    gitfiles, err = r.runcommand("git", "ls-files")
     gitfiles = gitfiles.splitlines()
-    r.runcommand("gin", "get-content", ".", echo=False)
+    r.runcommand("gin", "get-content", ".")
     for filepath in gitfiles:
         # normalise path separator (for Windows)
         filepath = os.path.normpath(filepath)
@@ -88,8 +88,7 @@ def isannexed(r, fname):
     - Otherwise, it's not annexed [False]
     """
     try:
-        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}",
-                                echo=False)
+        out, err = r.runcommand("git", "cat-file", "-p", f":{fname}")
     except (UnicodeDecodeError, IndexError):
         # For some reason on Windows a UnicodeDecodeError results in an
         # IndexError

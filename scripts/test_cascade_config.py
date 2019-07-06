@@ -13,8 +13,7 @@ def runner():
     reponame = util.randrepo()
     print("Setting up test repository")
     r.runcommand("gin", "create", reponame,
-                 "Test repository for cascading configurations",
-                 echo=False)
+                 "Test repository for cascading configurations")
     r.reponame = reponame
     r.cdrel(reponame)
     r.repositories[r.cmdloc] = reponame

@@ -20,8 +20,7 @@ def runner():
     reponame = util.randrepo()
     print("Setting up test repository")
     r.runcommand("gin", "create", reponame,
-                 "Test repository for alt config path (with spaces)",
-                 echo=False)
+                 "Test repository for alt config path (with spaces)")
     r.cdrel(reponame)
     r.repositories[r.cmdloc] = reponame
 

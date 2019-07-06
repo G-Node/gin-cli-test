@@ -104,7 +104,7 @@ def test_use_server_create_repo(runner):
     r.runcommand("gin", "create", repo_srvb,
                  "Test multiple servers (switching default)")
 
-    out, err = r.runcommand("gin", "repos", "--json", echo=False)
+    out, err = r.runcommand("gin", "repos", "--json")
     repos = json.loads(out)
     # find repo_srvb
     for repo in repos:
@@ -115,7 +115,7 @@ def test_use_server_create_repo(runner):
 
     # request repo_srvb explicitly
     out, err = r.runcommand("gin", "repoinfo", "--json",
-                            f"{r.username}/{repo_srvb}", echo=False)
+                            f"{r.username}/{repo_srvb}")
     repoinfo = json.loads(out)
     assert repoinfo["name"] == repo_srvb
 
@@ -123,7 +123,7 @@ def test_use_server_create_repo(runner):
     r.runcommand("gin", "use-server", "srva")
     r.login()
 
-    out, err = r.runcommand("gin", "repos", "--json", echo=False)
+    out, err = r.runcommand("gin", "repos", "--json")
     if out:
         repos = json.loads(out)
         for repo in repos:
@@ -192,8 +192,7 @@ def test_flag_server_create_repo(runner):
     r.runcommand("gin", "create", "--server", "srvb", repo_srvb,
                  "Test multiple servers (server flag)")
 
-    out, err = r.runcommand("gin", "repos", "--server", "srvb",
-                            "--json", echo=False)
+    out, err = r.runcommand("gin", "repos", "--server", "srvb", "--json")
     repos = json.loads(out)
     # find repo_srvb
     for repo in repos:
@@ -204,15 +203,14 @@ def test_flag_server_create_repo(runner):
 
     # request repo_srvb explicitly
     out, err = r.runcommand("gin", "repoinfo", "--json", "--server", "srvb",
-                            f"{r.username}/{repo_srvb}", echo=False)
+                            f"{r.username}/{repo_srvb}")
     repoinfo = json.loads(out)
     assert repoinfo["name"] == repo_srvb
 
     r.runcommand("gin", "login", "--server", "srva",
                  r.username, inp=r.password)
 
-    out, err = r.runcommand("gin", "repos", "--server", "srva",
-                            "--json", echo=False)
+    out, err = r.runcommand("gin", "repos", "--server", "srva", "--json")
     if out:
         repos = json.loads(out)
         for repo in repos:
