@@ -3,7 +3,7 @@
 loc=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 pushd $loc
 
-set -xeu
+set -euo pipefail
 
 image=gnode/ginhome
 
@@ -19,3 +19,15 @@ docker run --rm -v "${srvdata}":/data -p 3000:3000 -p 2222:22 --name gintestserv
 srvdatab="$(mktemp -d -t gin-data-b-XXXXX)"
 cp -a "./gin-data.init/." "${srvdatab}"
 docker run --rm -v "${srvdatab}":/data -p 4000:3000 -p 2424:22 --name gintestserverb -d ${image}
+
+if [[ $(uname -s) == "Darwin" ]]; then
+    # check if localhost aliases are set
+    iflocal=$(ifconfig lo0)
+    if ! [[ ${iflocal} =~ "127.0.0.2" && ${iflocal} =~ "127.0.0.3" ]]; then
+        echo "Tests on macOS need 127.0.0.2 and 127.0.0.3 set up as aliases for localhost"
+        echo "sudo ifconfig lo0 alias 127.0.0.2"
+        sudo ifconfig lo0 alias 127.0.0.2
+        echo "sudo ifconfig lo0 alias 127.0.0.3"
+        sudo ifconfig lo0 alias 127.0.0.3
+    fi
+fi
