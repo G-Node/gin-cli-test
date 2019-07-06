@@ -30,8 +30,12 @@ class Runner(object):
         # config
         confdir = os.path.join(self.cmdloc, "conf")
         os.mkdir(confdir)
-        self.logdir = os.path.join(self.loc,  "..", "log")
+
+        self.logdir = os.path.realpath(os.path.join(self.loc,  "..", "log"))
         self.outlog = os.path.join(self.logdir, "runner.log")
+
+        self.log("== Initialised runner ==")
+        self.log(f"Test directory: {self.cmdloc}")
 
         self.env["GIN_CONFIG_DIR"] = confdir
         self.env["GIN_LOG_DIR"] = os.path.abspath(self.logdir)
@@ -42,6 +46,11 @@ class Runner(object):
         if set_server_conf:
             self._set_server_conf()
 
+
+    def log(self, msg):
+        with open(self.outlog, "a") as logfile:
+            logfile.write(msg + "\n")
+
     def _set_server_conf(self):
         self.runcommand("gin", "add-server", "test",
                         "--web", "http://127.0.0.2:3000",
@@ -50,21 +59,18 @@ class Runner(object):
         self.runcommand("gin", "use-server", "test")
 
     def runcommand(self, *args, inp=None, exit=True):
-        def log(msg):
-            with open(self.outlog, "a") as logfile:
-                logfile.write(msg)
-        log(f"> {' '.join(args)}")
+        self.log(f"> {' '.join(args)}")
         if inp:
-            log(f"Input: {inp}")
+            self.log(f"Input: {inp}")
             inp += "\n"
         p = sp.run(args, env=self.env, stdout=sp.PIPE, stderr=sp.PIPE,
                    cwd=self.cmdloc, input=inp, encoding="utf-8")
         stdout, stderr = p.stdout.strip(), p.stderr.strip()
         # if exiting, force enable echo
         if stdout:
-            log(f"Out: {stdout}")
+            self.log(f"Out: {stdout}")
         if stderr:
-            log(f"Err: {stderr}")
+            self.log(f"Err: {stderr}")
         if p.returncode and exit:
             sys.exit(p.returncode)
 
