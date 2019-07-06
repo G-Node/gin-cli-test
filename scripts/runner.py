@@ -37,6 +37,8 @@ class Runner(object):
         self.log("== Initialised runner ==")
         self.log(f"Test directory: {self.cmdloc}")
 
+        testbinloc = os.path.realpath(os.path.join(self.loc, "..", "bin"))
+        self.env["PATH"] = testbinloc + os.pathsep + self.env["PATH"]
         self.env["GIN_CONFIG_DIR"] = confdir
         self.env["GIN_LOG_DIR"] = os.path.abspath(self.logdir)
 

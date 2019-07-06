@@ -11,7 +11,7 @@ then
     exit 1
 fi
 
-pytest -v
+python3 -m pytest -v
 teststatus=$?
 
 ./scripts/delete-all-test-repos.sh <<< echo

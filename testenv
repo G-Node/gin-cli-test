@@ -1,3 +1,4 @@
+export PATH=${PWD}/bin:${PATH}
 export GIN_CONFIG_DIR=${PWD}/conf
 export GIN_LOG_DIR=${PWD}/log
 export username=testuser
