@@ -29,9 +29,11 @@ class Runner(object):
         # write configuration file for annex excludes and set up test server
         # config
         confdir = os.path.join(self.cmdloc, "conf")
-        os.mkdir(confdir)
 
         self.logdir = os.path.realpath(os.path.join(self.loc,  "..", "log"))
+        os.makedirs(confdir, exist_ok=True)
+        os.makedirs(self.logdir, exist_ok=True)
+
         self.outlog = os.path.join(self.logdir, "runner.log")
 
         self.log("== Initialised runner ==")
