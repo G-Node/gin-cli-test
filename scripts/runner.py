@@ -50,15 +50,16 @@ class Runner(object):
         if set_server_conf:
             self._set_server_conf()
 
-
     def log(self, msg):
         with open(self.outlog, "a") as logfile:
             logfile.write(msg + "\n")
 
     def _set_server_conf(self):
+        testserver = self.env.get("GIN_TEST_SRV",  "http://127.0.0.2:3000")
+        testservergit = self.env.get("GIN_TEST_GIT", "git@127.0.0.2:2222")
         self.runcommand("gin", "add-server", "test",
-                        "--web", "http://127.0.0.2:3000",
-                        "--git", "git@127.0.0.2:2222",
+                        "--web", testserver,
+                        "--git", testservergit,
                         inp="yes")
         self.runcommand("gin", "use-server", "test")
 
