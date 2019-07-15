@@ -127,8 +127,8 @@ def test_errors(runner):
     # change git repo remote address/port and test get-content failure
     out, err = r.runcommand("git", "remote", "-v")
     name, address, *_ = out.split()
-    address = address.replace("2222", "1111")
-    r.runcommand("git", "remote", "set-url", name, address)
+    badaddress = "ssh://git@bad-hostname:22"
+    r.runcommand("git", "remote", "set-url", name, badaddress)
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
@@ -138,7 +138,6 @@ def test_errors(runner):
     assert errlines[-1].strip() == "[error] 5 operations failed"
 
     # revert remote change
-    address = address.replace("1111", "2222")
     r.runcommand("git", "remote", "set-url", name, address)
 
     # Change gin and git server address:port in config and test failures
@@ -198,7 +197,7 @@ def test_errors(runner):
     # set bad host key and check error
     with open(os.path.join(goodconfdir, "known_hosts"), "r+") as hostkeyfile:
         goodhostkey = hostkeyfile.read()
-        badhostkey = goodhostkey.replace("AAA", "BBB")
+        badhostkey = goodhostkey.replace("A", "B")  # assumes at least one A
         hostkeyfile.seek(0)
         hostkeyfile.write(badhostkey)
 
