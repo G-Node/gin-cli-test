@@ -147,7 +147,7 @@ def test_errors(runner):
     r.env["GIN_CONFIG_DIR"] = badconfdir
     shutil.copytree(goodconfdir, badconfdir)
     with open(os.path.join(goodconfdir, "config.yml")) as conffile:
-        confdata = yaml.load(conffile.read(), Loader=yaml.CSafeLoader)
+        confdata = yaml.load(conffile.read(), Loader=yaml.SafeLoader)
 
     confdata["servers"]["test"]["web"]["port"] = 1
     confdata["servers"]["test"]["git"]["port"] = 1
