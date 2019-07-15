@@ -7,7 +7,7 @@ set -euo pipefail
 
 image=gnode/ginhome
 
-docker pull ${image}
+docker pull ${image} || true  # don't fail if offline
 
 # Create first server, initialise it with config data, and start it
 docker create -p 3000:3000 -p 2222:22 --name gintestserver ${image}
