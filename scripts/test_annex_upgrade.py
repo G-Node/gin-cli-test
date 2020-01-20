@@ -32,6 +32,7 @@ def runner():
 
 
 @pytest.mark.slow
+@pytest.mark.skip("Deprecated: Repo versions are upgraded automatically")
 def test_annex_upgrade(runner):
     r = runner
 
