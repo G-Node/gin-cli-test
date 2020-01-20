@@ -11,7 +11,8 @@ owerrmsg = ("download failed: local modified or untracked files would be "
             "overwritten by download")
 cferrmsg = ("download failed: files changed locally and remotely "
             "and cannot be automatically merged (merge conflict)")
-acferrmsg = ("files changed locally and remotely. Both files have been kept:")
+acferrmsg = ("files changed locally and remotely and the conflict was "
+             "automatically resolved; you may want to examine the result")
 
 
 def server_remotes():
@@ -147,7 +148,6 @@ def _tracked_conflict(runner, sizea, sizeb):
     out, err = locb.runcommand("gin", "download", exit=False)
     assert err, "Expected error, got nothing"
     assert experr in err
-    assert err.endswith(fname)
 
     if not annexed:
         # resolution: rename file and sync
