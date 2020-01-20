@@ -5,7 +5,7 @@ pushd $loc
 
 set -euo pipefail
 
-image=gnode/ginhome
+image=gnode/gin-web
 
 docker pull ${image} || true  # don't fail if offline
 
