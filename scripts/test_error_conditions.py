@@ -132,10 +132,13 @@ def test_errors(runner):
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    for line in errlines[:-1]:
-        assert line.strip().endswith("(content or server unavailable)")
-    assert errlines[-1].strip() == "[error] 5 operations failed"
+
+    # count output lines with failed message
+    outlines = out.splitlines()
+    failmsg = "failed: authorisation failed or remote storage unavailable"
+    nfail = len([ol for ol in outlines if failmsg in ol])
+    assert nfail == 5
+    assert err.strip().endswith("[error] 5 operations failed")
 
     # revert remote change
     r.runcommand("git", "remote", "set-url", name, address)
@@ -171,23 +174,21 @@ def test_errors(runner):
     # get content should fail now
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    for line in errlines[:-1]:
-        # TODO: Should print auth error
-        assert line.strip().endswith("(content or server unavailable)")
-    assert errlines[-1].strip() == "[error] 5 operations failed"
+
+    # count output lines with failed message
+    outlines = out.splitlines()
+    failmsg = "failed: authorisation failed or remote storage unavailable"
+    nfail = len([ol for ol in outlines if failmsg in ol])
+    assert nfail == 5
+    assert err.strip().endswith("[error] 5 operations failed")
 
     out, err = r.runcommand("gin", "download", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    assert len(errlines) == 1
-    assert errlines[0].strip() == "[error] download failed: permission denied"
+    assert err.strip() == "[error] download failed: permission denied"
 
     out, err = r.runcommand("gin", "upload", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    assert len(errlines) == 1
-    assert errlines[0].strip() == "[error] 1 operation failed"
+    assert err.strip() == "[error] 1 operation failed"
     outlines = out.splitlines()
     assert outlines[-1].strip() == "upload failed: permission denied"
 
@@ -204,24 +205,22 @@ def test_errors(runner):
     # TODO: Check error messages
     out, err = r.runcommand("gin", "download", "--content", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    assert len(errlines) == 1
-    assert errlines[0].strip() ==\
+    assert err.strip() ==\
         "[error] download failed: server key does not match known host key"
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    for line in errlines[:-1]:
-        # TODO: Should print host key error
-        assert line.strip().endswith("(content or server unavailable)")
-    assert errlines[-1].strip() == "[error] 5 operations failed"
+
+    # count output lines with failed message
+    outlines = out.splitlines()
+    failmsg = "failed: authorisation failed or remote storage unavailable"
+    nfail = len([ol for ol in outlines if failmsg in ol])
+    assert nfail == 5
+    assert err.strip().endswith("[error] 5 operations failed")
 
     out, err = r.runcommand("gin", "upload", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    assert len(errlines) == 1
-    assert errlines[0].strip() == "[error] 1 operation failed"
+    assert err.strip() == "[error] 1 operation failed"
     outlines = out.splitlines()
     assert outlines[-1].strip() ==\
         "upload failed: server key does not match known host key"
@@ -381,9 +380,12 @@ def test_errors_offline(orunner):
 
     out, err = r.runcommand("gin", "get-content", "datafiles", exit=False)
     assert err, "Expected error, got nothing"
-    errlines = err.splitlines()
-    for line in errlines[:-1]:
-        assert line.strip().endswith("(content or server unavailable)")
-    assert errlines[-1].strip() == "[error] 5 operations failed"
+
+    # count output lines with failed message
+    outlines = out.splitlines()
+    failmsg = "failed: authorisation failed or remote storage unavailable"
+    nfail = len([ol for ol in outlines if failmsg in ol])
+    assert nfail == 5
+    assert err.strip().endswith("[error] 5 operations failed")
 
     print("DONE!")
