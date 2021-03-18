@@ -91,7 +91,7 @@ def test_workflow(runner):
     r.runcommand("gin", "upload", ".")
 
     # cleanup local repository
-    r.runcommand("gin", "annex", "uninit")
+    r.runcommand("gin", "annex", "uninit", exit=False)
     r.cdrel("..")
     shutil.rmtree(r.reponame, onerror=util.force_rm)
 
@@ -159,7 +159,7 @@ def test_workflow_offline(drunner):
     r.runcommand("gin", "upload", ".")
 
     # cleanup local repository
-    r.runcommand("gin", "annex", "uninit")
+    r.runcommand("gin", "annex", "uninit", exit=False)
     r.cdrel("..")
     shutil.rmtree(r.reponame, onerror=util.force_rm)
 

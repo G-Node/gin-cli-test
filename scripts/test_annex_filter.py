@@ -61,7 +61,7 @@ def test_annex_filters(runner):
     assert not isannexed("bigscript.py")
 
     # clear local directory and reclone
-    r.runcommand("gin", "annex", "uninit")
+    r.runcommand("gin", "annex", "uninit", exit=False)
     r.cdrel("..")
     shutil.rmtree(r.reponame, onerror=util.force_rm)
 
